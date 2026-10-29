@@ -1,0 +1,367 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
+using UnityEditor;
+using UnityEditor.PackageManager;
+using UnityEditor.PackageManager.Requests;
+using UnityEngine;
+using PackageInfo = UnityEditor.PackageManager.PackageInfo;
+
+namespace AdsCallerPackageInstallation
+{
+    // Independent of Ads Caller runtime, Addressables, Newtonsoft, and game assemblies.
+    [InitializeOnLoad]
+    public static class PackageInstaller
+    {
+        const string Prefix = "com.adscaller.family.";
+        const string StatePath = "Library/AdsCallerInstaller/state.json";
+        const string PayloadRoot = "Assets/AdsCallerInstaller";
+        const string ImportKey = "AdsCaller.Installer.NativeImport";
+        [Serializable] public sealed class Entry { public string path, guid, package; public bool configuration; }
+        [Serializable] public sealed class Delivery { public int schema; public string unity, online; public string[] packages; public Entry[] assets; }
+        [Serializable] public sealed class State
+        {
+            public string payload, backup, phase, error;
+            public string[] packages, archived, replaced, created;
+            public string[] installed;
+            public bool hadManifest;
+        }
+        static State state;
+        static AddAndRemoveRequest resolve;
+        static double nextCheck;
+        static bool operating;
+        static PackageInstaller()
+        {
+            AssetDatabase.importPackageStarted += _ => SessionState.SetBool(ImportKey, true);
+            AssetDatabase.importPackageCompleted += _ => Imported();
+            AssetDatabase.importPackageCancelled += _ => Imported();
+            AssetDatabase.importPackageFailed += (_, __) => Imported();
+            EditorApplication.update += Tick;
+            EditorApplication.delayCall += Tick;
+        }
+        static void Imported()
+        {
+            SessionState.SetBool(ImportKey, false);
+            EditorApplication.delayCall += Tick;
+        }
+        [MenuItem("Ads Caller/Retry Package Installation", priority = 190)]
+        public static void Retry()
+        {
+            foreach (string file in Payloads()) SessionState.EraseBool("AdsCaller.InstallFailed/" + file);
+            if (File.Exists(StatePath))
+            {
+                var failed = JsonUtility.FromJson<State>(File.ReadAllText(StatePath));
+                if (failed.phase == "failed") File.Delete(StatePath);
+            }
+            state = null;
+        }
+        static IEnumerable<string> Payloads() => Directory.Exists(PayloadRoot) ? Directory.GetFiles(PayloadRoot, "*.adscaller.bytes").Select(p => p.Replace('\\', '/')).OrderBy(p => p, StringComparer.Ordinal) : Array.Empty<string>();
+        static void Tick()
+        {
+            if (operating) return;
+            // Keep an unfocused/batch editor pumping while UPM and domain reloads are pending.
+            if ((state != null && state.phase != "failed") || (state == null &&
+                (File.Exists(StatePath) || Payloads().Any(p => !SessionState.GetBool("AdsCaller.InstallFailed/" + p, false)))))
+                EditorApplication.QueuePlayerLoopUpdate();
+            if (SessionState.GetBool(ImportKey, false) || EditorApplication.isCompiling || EditorApplication.isUpdating || EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.timeSinceStartup < nextCheck) return;
+            nextCheck = EditorApplication.timeSinceStartup + 1;
+            operating = true;
+            try
+            {
+                if (state == null && File.Exists(StatePath)) state = JsonUtility.FromJson<State>(File.ReadAllText(StatePath));
+                if (state != null && state.phase == "failed") return;
+                if (state != null) { Complete(); return; }
+                string payload = Payloads().FirstOrDefault(p => !SessionState.GetBool("AdsCaller.InstallFailed/" + p, false));
+                if (payload != null)
+                {
+                    SessionState.SetBool("AdsCaller.InstallFailed/" + payload, true);
+                    Install(payload);
+                }
+            }
+            catch (Exception e)
+            {
+                if (state != null)
+                {
+                    try { Rollback(); } catch (Exception rollback) { Debug.LogError("[Ads Caller Installer] Recovery error: " + rollback.Message); }
+                    state.phase = "failed"; state.error = e.ToString(); Save();
+                    SessionState.SetBool("AdsCaller.InstallFailed/" + state.payload, true);
+                }
+                Debug.LogError("[Ads Caller Installer] " + e.Message + "\nUse Ads Caller > Retry Package Installation after resolving the problem. Backup: " + state?.backup);
+            }
+            finally { operating = false; }
+        }
+        static string Safe(string root, string relative)
+        {
+            string fullRoot = Path.GetFullPath(root) + Path.DirectorySeparatorChar;
+            string full = Path.GetFullPath(Path.Combine(root, relative));
+            if (!full.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase)) throw new IOException("Invalid delivery path: " + relative);
+            return full;
+        }
+        static string PackageName(string old)
+        {
+            if (!old.StartsWith("com.gss.adscaller.", StringComparison.Ordinal)) return old;
+            string suffix = old.Substring("com.gss.adscaller.".Length);
+            return Prefix + (suffix == "android" || suffix == "amazon" ? "main." + suffix : suffix == "crosspromo" ? "cross-promo" : suffix);
+        }
+        static string Guid(string file)
+        {
+            if (!File.Exists(file + ".meta")) return null;
+            return Regex.Match(File.ReadAllText(file + ".meta"), @"(?m)^guid: ([a-f0-9]{32})").Groups[1].Value;
+        }
+        static string TemplateGuid(string original)
+        {
+            using (var md5 = MD5.Create()) return BitConverter.ToString(md5.ComputeHash(Encoding.UTF8.GetBytes("adscaller.family/template/" + original))).Replace("-", "").ToLowerInvariant();
+        }
+        static void Save()
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(StatePath));
+            File.WriteAllText(StatePath, JsonUtility.ToJson(state, true));
+            if (Directory.Exists(state.backup)) File.WriteAllText(state.backup + "/receipt.json", JsonUtility.ToJson(state, true));
+        }
+        static void CopyTree(string from, string to)
+        {
+            Directory.CreateDirectory(to);
+            foreach (string file in Directory.GetFiles(from, "*", SearchOption.AllDirectories))
+            {
+                string destination = Safe(to, file.Substring(from.Length).TrimStart('/', '\\'));
+                Directory.CreateDirectory(Path.GetDirectoryName(destination)); File.Copy(file, destination, true);
+            }
+        }
+        static bool ReplaceContents(string from, string to)
+        {
+            // Retain the registered package directory while upgrading its owned files.
+            bool changed = false;
+            foreach (string file in Directory.GetFiles(to, "*", SearchOption.AllDirectories))
+            {
+                string relative = file.Substring(to.Length).TrimStart('/', '\\');
+                if (!File.Exists(Safe(from, relative))) { File.Delete(file); changed = true; }
+            }
+            foreach (string file in Directory.GetFiles(from, "*", SearchOption.AllDirectories))
+            {
+                string destination = Safe(to, file.Substring(from.Length).TrimStart('/', '\\'));
+                if (File.Exists(destination) && File.ReadAllBytes(file).SequenceEqual(File.ReadAllBytes(destination))) continue;
+                Directory.CreateDirectory(Path.GetDirectoryName(destination)); File.Copy(file, destination, true); changed = true;
+            }
+            return changed;
+        }
+        public static void Install(string payload)
+        {
+            string stage = "Library/AC" + System.Guid.NewGuid().ToString("N").Substring(0, 8);
+            Directory.CreateDirectory(stage);
+            Delivery delivery;
+            try
+            {
+                using (var zip = ZipFile.OpenRead(payload))
+                    foreach (var entry in zip.Entries)
+                    {
+                        string target = Safe(stage, entry.FullName);
+                        Directory.CreateDirectory(Path.GetDirectoryName(target));
+                        if (entry.FullName.EndsWith("/")) Directory.CreateDirectory(target);
+                        else using (var input = entry.Open()) using (var output = File.Create(target)) input.CopyTo(output);
+                    }
+                delivery = JsonUtility.FromJson<Delivery>(File.ReadAllText(stage + "/delivery.json"));
+                if (delivery == null || delivery.schema != 1 || delivery.packages == null || delivery.assets == null) throw new IOException("Unsupported Ads Caller delivery.");
+                var sourceVersion = new Version(delivery.unity.Split('f')[0].Split('p')[0]);
+                var targetVersion = new Version(Application.unityVersion.Split('f')[0].Split('p')[0]);
+                if (targetVersion.Major < sourceVersion.Major || (targetVersion.Major == sourceVersion.Major && targetVersion.Minor < sourceVersion.Minor)) throw new InvalidOperationException("This delivery requires Unity " + sourceVersion.Major + "." + sourceVersion.Minor + " or newer. Use the matching Ads Caller export.");
+                if (delivery.unity.StartsWith("2022.") && Application.unityVersion.StartsWith("6000.") && delivery.packages.Contains(Prefix + "cross-promo")) throw new InvalidOperationException("Use the Unity 6 CrossPromo delivery in Unity 6 projects.");
+                if (delivery.packages.Any(p => !Regex.IsMatch(p, @"^com\.adscaller\.family\.[a-z0-9.-]+$"))) throw new IOException("Invalid package identity.");
+                var registered = PackageInfo.GetAllRegisteredPackages();
+                string opposite = delivery.online == "android" ? "amazon" : delivery.online == "amazon" ? "android" : null;
+                if (opposite != null && (Directory.Exists("Assets/AdsCaller/Scripts/Providers/" + (opposite == "amazon" ? "Amazon" : "Android")) || registered.Any(p => PackageName(p.name) == Prefix + "main." + opposite)))
+                    throw new InvalidOperationException("Android and Amazon are alternative Main providers. Remove the existing " + opposite + " provider before installing " + delivery.online + ".");
+                // Bring the rest of an earlier UPM installation into the same family, retaining its contents.
+                var obsolete = registered.Where(p => p.name.StartsWith("com.gss.adscaller.", StringComparison.Ordinal)).ToArray();
+                foreach (var package in obsolete)
+                {
+                    string target = stage + "/packages/" + PackageName(package.name);
+                    if (Directory.Exists(target)) continue;
+                    CopyTree(package.resolvedPath, target);
+                    string manifest = File.ReadAllText(target + "/package.json");
+                    foreach (var old in obsolete) manifest = manifest.Replace(old.name, PackageName(old.name));
+                    manifest = Regex.Replace(manifest, "\"name\"\\s*:\\s*\"GSS\"", "\"name\": \"Sameer Khan\"");
+                    File.WriteAllText(target + "/package.json", manifest);
+                }
+                var names = Directory.GetDirectories(stage + "/packages").Select(Path.GetFileName).ToArray();
+                // Reject duplicate script/asset ownership before changing the destination project.
+                var legacy = new Dictionary<string, Entry>();
+                foreach (var asset in delivery.assets.Where(a => !string.IsNullOrEmpty(a.guid))) legacy[asset.guid] = asset;
+                var overlaps = Directory.GetFiles("Assets", "*.meta", SearchOption.AllDirectories)
+                    .Select(m => m.Substring(0, m.Length - 5)).Where(File.Exists)
+                    .Where(p => !p.Replace('\\', '/').StartsWith(PayloadRoot + "/", StringComparison.Ordinal))
+                    .Where(p => legacy.ContainsKey(Guid(p) ?? "")).ToArray();
+                string backup = "AdsCallerMigrationBackups/" + DateTime.Now.ToString("yyyyMMdd-HHmmss-fffffff");
+                state = new State { payload = payload, backup = backup, phase = "installing", packages = names,
+                    archived = Array.Empty<string>(), replaced = Array.Empty<string>(), installed = Array.Empty<string>(), created = Array.Empty<string>(), hadManifest = File.Exists("Packages/manifest.json") };
+                Directory.CreateDirectory(backup);
+                if (state.hadManifest) File.Copy("Packages/manifest.json", backup + "/manifest.json");
+                if (File.Exists("Packages/packages-lock.json")) File.Copy("Packages/packages-lock.json", backup + "/packages-lock.json");
+                Save();
+                string[] additions = Array.Empty<string>(), removals = Array.Empty<string>();
+                bool filesChanged = false;
+                bool needsResolution = obsolete.Length != 0 || names.Any(name => {
+                    string text = File.ReadAllText(stage + "/packages/" + name + "/package.json");
+                    string version = Regex.Match(text, "\"version\"\\s*:\\s*\"([^\"]+)\"").Groups[1].Value;
+                    return !registered.Any(p => p.name == name && p.version == version);
+                });
+                EditorApplication.LockReloadAssemblies();
+                AssetDatabase.DisallowAutoRefresh();
+                try
+                {
+                    // Earlier UPM templates used source GUIDs. Keep any such configuration graph
+                    // in Assets before replacing its package, so existing scene references survive.
+                    foreach (var config in delivery.assets.Where(a => a.configuration))
+                    {
+                        string existing = AssetDatabase.GUIDToAssetPath(config.guid);
+                        if (!existing.StartsWith("Packages/", StringComparison.Ordinal)) continue;
+                        var owner = PackageInfo.FindForAssetPath(existing);
+                        if (owner == null || (!names.Contains(owner.name) && !obsolete.Any(p => p.name == owner.name))) continue;
+                        string physical = owner.resolvedPath + existing.Substring(owner.assetPath.Length);
+                        string relative = "Assets/AdsCaller/Configuration/Preserved-" + config.guid + ".asset";
+                        if (File.Exists(relative)) throw new IOException("Configuration preservation path is occupied: " + relative);
+                        state.created = state.created.Concat(new[] { relative }).ToArray(); Save();
+                        Directory.CreateDirectory(Path.GetDirectoryName(relative));
+                        File.Copy(physical, relative); File.Copy(physical + ".meta", relative + ".meta");
+                    }
+                    // Legacy prefab instances may inherit their config without a scene override.
+                    // Keep that default binding on migration and every subsequent upgrade.
+                    var projectConfigGuids = new HashSet<string>(Directory.GetFiles("Assets", "*.asset", SearchOption.AllDirectories).Select(Guid));
+                    foreach (var config in delivery.assets.Where(a => a.configuration && projectConfigGuids.Contains(a.guid)))
+                        foreach (string file in Directory.GetFiles(stage + "/packages", "*", SearchOption.AllDirectories)
+                            .Where(p => p.EndsWith(".prefab") || p.EndsWith(".asset") || p.EndsWith(".unity")))
+                        {
+                            string text = File.ReadAllText(file), replacement = text.Replace(TemplateGuid(config.guid), config.guid);
+                            if (replacement != text) File.WriteAllText(file, replacement, new UTF8Encoding(false));
+                        }
+                    foreach (string path in overlaps)
+                    {
+                        var asset = legacy[Guid(path)];
+                        if (asset.configuration) continue;
+                        string destination = Safe(backup + "/AssetsArchive", path);
+                        Directory.CreateDirectory(Path.GetDirectoryName(destination));
+                        state.archived = state.archived.Concat(new[] { path }).ToArray(); Save();
+                        File.Move(path, destination); File.Move(path + ".meta", destination + ".meta");
+                    }
+                    foreach (string name in names.Concat(obsolete.Where(p => p.source == PackageSource.Embedded).Select(p => p.name)))
+                    {
+                        string destination = Safe("Packages", name);
+                        if (!Directory.Exists(destination)) continue;
+                        state.replaced = state.replaced.Concat(new[] { name }).ToArray(); Save();
+                        Directory.CreateDirectory(backup + "/Packages");
+                        if (names.Contains(name)) CopyTree(destination, Safe(backup + "/Packages", name));
+                        else Directory.Move(destination, Safe(backup + "/Packages", name));
+                    }
+                    foreach (string name in names)
+                    {
+                        state.installed = state.installed.Concat(new[] { name }).ToArray(); Save();
+                        string source = Safe(stage + "/packages", name), destination = Safe("Packages", name);
+                        if (Directory.Exists(destination)) filesChanged |= ReplaceContents(source, destination);
+                        else { Directory.Move(source, destination); filesChanged = true; }
+                    }
+                    if (Directory.Exists(stage + "/project"))
+                        foreach (string file in Directory.GetFiles(stage + "/project", "*", SearchOption.AllDirectories).Where(p => !p.EndsWith(".meta")))
+                        {
+                            string relative = file.Substring((stage + "/project/").Length).Replace('\\', '/');
+                            string destination = Safe(".", relative);
+                            // Addressables settings, imported demos and user edits belong to the project.
+                            if (File.Exists(destination) || File.Exists(destination + ".meta")) continue;
+                            string incomingGuid = Guid(file);
+                            if (!string.IsNullOrEmpty(incomingGuid) && !string.IsNullOrEmpty(AssetDatabase.GUIDToAssetPath(incomingGuid))) continue;
+                            state.created = state.created.Concat(new[] { relative }).ToArray(); Save();
+                            Directory.CreateDirectory(Path.GetDirectoryName(destination)); File.Copy(file, destination);
+                            if (File.Exists(file + ".meta")) File.Copy(file + ".meta", destination + ".meta");
+                        }
+                    state.phase = "resolving"; Save();
+                    var dependencies = new Dictionary<string, string>();
+                    foreach (string name in names)
+                    {
+                        string text = File.ReadAllText("Packages/" + name + "/package.json");
+                        foreach (Match match in Regex.Matches(text, "\"(com\\.unity\\.[^\"]+)\"\\s*:\\s*\"([^\"]+)\"")) dependencies[match.Groups[1].Value] = match.Groups[2].Value;
+                    }
+                    string existingManifest = File.Exists("Packages/manifest.json") ? File.ReadAllText("Packages/manifest.json") : "";
+                    if (Application.unityVersion.StartsWith("6000.") && dependencies.ContainsKey("com.unity.ugui")) dependencies["com.unity.ugui"] = "2.0.0";
+                    needsResolution |= dependencies.Keys.Any(name => !registered.Any(p => p.name == name));
+                    additions = dependencies.Select(d => {
+                        var pin = Regex.Match(existingManifest, "\"" + Regex.Escape(d.Key) + "\"\\s*:\\s*\"([^\"]+)\"");
+                        string version = pin.Success ? pin.Groups[1].Value : d.Value;
+                        return Regex.IsMatch(version, @"^\d+\.\d+\.\d+(?:[-+].*)?$") ? d.Key + "@" + version : null;
+                    }).Where(id => id != null).ToArray();
+                    removals = obsolete.Where(p => Regex.IsMatch(existingManifest, "\"" + Regex.Escape(p.name) + "\"\\s*:")).Select(p => p.name).ToArray();
+                }
+                finally { AssetDatabase.AllowAutoRefresh(); EditorApplication.UnlockReloadAssemblies(); }
+                // Embedded packages are discovered automatically and must not be passed to Add.
+                // Reassert the existing public pins in one asynchronous request, forcing graph
+                // resolution on upgrades while preserving the destination's chosen versions.
+                if (needsResolution && (additions.Length != 0 || removals.Length != 0)) resolve = Client.AddAndRemove(additions, removals);
+                else if (needsResolution) Client.Resolve();
+                if (!needsResolution && !filesChanged) { state.phase = "importing"; Save(); }
+                Debug.Log("[Ads Caller Installer] Resolving UPM dependencies. Backup: " + backup);
+            }
+            finally { if (Directory.Exists(stage)) Directory.Delete(Path.GetFullPath(stage), true); }
+        }
+        static void Complete()
+        {
+            if (state.phase == "installing") throw new IOException("Installation was interrupted; restoring the previous installation.");
+            if (resolve != null)
+            {
+                if (!resolve.IsCompleted) return;
+                if (resolve.Status == StatusCode.Failure) throw new IOException(resolve.Error.message);
+                resolve = null;
+            }
+            // Do not queue Client.List over the fire-and-forget Resolve request. Registered
+            // packages are the AssetDatabase's ground truth and include embedded source kinds.
+            var packages = PackageInfo.GetAllRegisteredPackages();
+            if (!state.packages.All(name => packages.Any(p => p.name == name && p.source == PackageSource.Embedded))) return;
+            if (state.phase == "resolving")
+            {
+                state.phase = "importing"; Save();
+                AssetDatabase.Refresh();
+                return;
+            }
+            state.phase = "completed"; Save();
+            string payload = state.payload;
+            File.Delete(StatePath); state = null;
+            SessionState.EraseBool("AdsCaller.InstallFailed/" + payload);
+            if (File.Exists(payload) && !AssetDatabase.DeleteAsset(payload.Replace('\\', '/'))) throw new IOException("Could not remove completed delivery payload: " + payload);
+            AssetDatabase.Refresh();
+            Debug.Log("ADSCALLER_UPM_INSTALL_PASS: embedded packages installed; author Sameer Khan.");
+        }
+        static void Rollback()
+        {
+            if (state.phase == "installing" || state.phase == "resolving")
+            {
+                foreach (string name in state.installed ?? Array.Empty<string>())
+                {
+                    string destination = Safe("Packages", name);
+                    if (Directory.Exists(destination) && (!state.replaced.Contains(name) || Directory.Exists(Safe(state.backup + "/Packages", name)))) Directory.Delete(destination, true);
+                }
+                foreach (string name in state.replaced)
+                {
+                    string saved = Safe(state.backup + "/Packages", name);
+                    if (Directory.Exists(saved)) Directory.Move(saved, Safe("Packages", name));
+                }
+                foreach (string relative in state.archived)
+                {
+                    string saved = Safe(state.backup + "/AssetsArchive", relative), target = Safe(".", relative);
+                    Directory.CreateDirectory(Path.GetDirectoryName(target));
+                    if (File.Exists(saved)) File.Move(saved, target);
+                    if (File.Exists(saved + ".meta")) File.Move(saved + ".meta", target + ".meta");
+                }
+                foreach (string relative in state.created)
+                {
+                    string target = Safe(".", relative);
+                    if (File.Exists(target)) File.Delete(target);
+                    if (File.Exists(target + ".meta")) File.Delete(target + ".meta");
+                }
+                if (state.hadManifest) File.Copy(state.backup + "/manifest.json", "Packages/manifest.json", true);
+                if (File.Exists(state.backup + "/packages-lock.json")) File.Copy(state.backup + "/packages-lock.json", "Packages/packages-lock.json", true);
+                Client.Resolve(); AssetDatabase.Refresh();
+            }
+        }
+    }
+}

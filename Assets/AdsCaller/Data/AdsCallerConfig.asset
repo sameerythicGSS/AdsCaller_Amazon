@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e65df72ccb46fd84582369856ca988e6, type: 3}
+  m_Name: AdsCallerConfig
+  m_EditorClassIdentifier: 
+  MaxSdkKey: Gr4o7dckyfAf9gTqvDoRRPHvTev4Le3cU8Ocm_LhfVMpBvd47PWZqoSIRMMn_QOUTn6JnR0QyND7HrCOFiz3VP
+  InterstitialAdUnitId: a8a076fb58b2af85
+  RewardedAdUnitId: d0a867f5a95f1109
+  BannerAdUnitId: b616d78e99803e01
+  LargeBannerAdUnitId: b616d78e99803e01
+  initializeOnStart: 1
+  isTestLog: 0
+  showMediationDebugger: 0
+  canShowBanner: 1
+  canShowLargeBanner: 1
+  defaultBannerPosition: 7
+  defaultLargeBannerPosition: 3
+  showBannerOnSceneChange: 0
+  bannerDelay: 2
+  canShowInterstitial: 1
+  interstitialCooldown: 5
+  interstitialShowingDelay: 0.5
+  showAdNotAvailablePopup: 0
+  adNotAvailablePopup: {fileID: 1480338630579183576, guid: 0a5fad4f067cd5c4ab5ab7d0ae1a8e34, type: 3}

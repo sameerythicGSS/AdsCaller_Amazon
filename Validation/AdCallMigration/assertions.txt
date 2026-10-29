@@ -1,0 +1,54 @@
+group aliases, typed variables and misspelled methods under one manager; ignore comments, strings, own implementation and inactive branches
+discover arbitrary wrapper and method names for Show all
+inventory non-call type references
+separate resolved overloads
+block conditions and conditional-access invocations
+bulk replacement counts with manual cases
+compile replacement preview before writing
+replace whole multiline invocation and discard arbitrary arguments
+preserve comments and string contents byte-for-byte
+leave blocked calls intact
+preserve callbacks by parameter identity with reordered named arguments
+block incompatible reward arguments
+support explicit singleton calls after old wrapper was removed
+allow explicit mapping for unresolved manager
+discover unresolved managers in lowercase namespaces
+block replacements that discard declarations still used by gameplay
+compiler errors prohibit apply before touching files
+honor supplied platform defines
+skip syntax-invalid files
+exclude provider, SDK, package and editor implementation paths
+unselected managers never change
+one mapping replaces all 50 occurrences with different arguments
+rescan confirms migrated manager calls are gone
+generated mediator API compiles: Interstitial
+generated mediator API compiles: ShowBanner
+generated mediator API compiles: HideBanner
+generated mediator API compiles: ShowLargeBanner
+generated mediator API compiles: HideLargeBanner
+generated mediator API compiles: HideAllBanners
+generated mediator API compiles: BackButtonAd
+generated mediator API compiles: RemoveAds
+preserve entire reward lambdas with nested statements
+recognize all three user reward lambdas even when old wrapper cannot resolve
+migrate user callback examples without skipped calls or compiler errors
+preserve complete callback bodies, empty failure lambdas, comments and nested mediator calls
+suggest both user callbacks when mapping a method to Rewarded
+unresolved named callback arguments follow displayed source argument order
+compiler preflight rejects a lambda body that cannot convert to Action
+callback requiring an argument is still ineligible
+lambdas formerly targeting custom delegates convert to mediator Actions
+explain duplicate callback selection precisely
+unrelated singleton is not an ad candidate
+gameplay rewards name is not an ad candidate
+ads substring inside Downloads is not an ad candidate
+arbitrarily named manager with misspelled interstitial stays discoverable
+explicit ad wrappers remain discoverable
+stale second file prevents all writes
+preserve UTF-8 BOM and CRLF
+persist original bytes, receipt and preview outside Assets
+restore preflight protects later edits without partial restoration
+restore exact original bytes
+reject paths outside gameplay Assets
+production window scans active Unity player assemblies
+production scanner never offers protected implementation files

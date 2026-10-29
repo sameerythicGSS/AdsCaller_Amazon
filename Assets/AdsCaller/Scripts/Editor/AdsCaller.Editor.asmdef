@@ -1,0 +1,11 @@
+{
+  "name": "AdsCaller.Editor",
+  "rootNamespace": "AdsCaller",
+  "references": [],
+  "autoReferenced": true,
+  "includePlatforms": [
+    "Editor"
+  ],
+  "overrideReferences": true,
+  "precompiledReferences": []
+}

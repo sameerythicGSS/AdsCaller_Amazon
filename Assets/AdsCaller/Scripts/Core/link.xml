@@ -1,0 +1,7 @@
+<linker>
+  <assembly fullname="Unity.InputSystem" ignoreIfMissing="1">
+    <type fullname="UnityEngine.InputSystem.Keyboard" preserve="all" />
+    <type fullname="UnityEngine.InputSystem.Gamepad" preserve="all" />
+    <type fullname="UnityEngine.InputSystem.Controls.ButtonControl" preserve="all" />
+  </assembly>
+</linker>

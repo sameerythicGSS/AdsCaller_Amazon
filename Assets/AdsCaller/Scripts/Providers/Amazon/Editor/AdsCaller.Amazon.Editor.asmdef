@@ -1,0 +1,13 @@
+{
+  "name": "AdsCaller.Amazon.Editor",
+  "rootNamespace": "AdsCaller",
+  "references": [
+    "AdsCaller.Amazon",
+    "AdsCaller.Core",
+    "AdsCaller.Editor"
+  ],
+  "autoReferenced": true,
+  "includePlatforms": [
+    "Editor"
+  ]
+}

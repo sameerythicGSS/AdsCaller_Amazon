@@ -1,0 +1,30 @@
+.web-studio { background-color: #20242c; color: #edf2fa; }
+.hero { flex-shrink: 0; padding: 18px 22px 15px; background-color: #2b3341; }
+.eyebrow { color: #91c8fa; font-size: 10px; -unity-font-style: bold; letter-spacing: 1px; }
+.hero-title { font-size: 25px; -unity-font-style: bold; margin-top: 6px; margin-bottom: 5px; }
+.tabs { flex-shrink: 0; flex-direction: row; padding: 6px 15px; background-color: #2b3341; }
+.tab { flex-grow: 1; height: 31px; background-color: #20242c; border-width: 0; color: #b9c5d5; }
+.tab.selected { background-color: #396c9e; color: #ffffff; }
+.body { flex-grow: 1; flex-basis: 0; min-height: 0; padding: 8px 14px; }
+.card { padding: 14px; margin-bottom: 10px; background-color: #2b303a; border-radius: 9px; }
+.card-title { font-size: 15px; -unity-font-style: bold; margin-bottom: 4px; }
+.muted { color: #b9c5d5; white-space: normal; margin-bottom: 8px; margin-top: 4px; }
+.summary { color: #9edec6; white-space: normal; -unity-font-style: bold; margin-top: 7px; margin-bottom: 7px; }
+.path { white-space: normal; margin-top: 4px; margin-bottom: 5px; }
+.row { flex-direction: row; margin-top: 5px; margin-bottom: 7px; }
+.wrap { flex-wrap: wrap; }
+.grow { flex-grow: 1; }
+.web-studio Button { min-height: 28px; padding: 5px 11px; margin: 3px; border-radius: 5px; }
+.web-studio .primary { background-color: #3279b8; color: white; -unity-font-style: bold; }
+.footer { flex-shrink: 0; flex-direction: row; align-items: center; background-color: #2b3341; }
+.status { flex-grow: 1; flex-shrink: 1; padding: 10px 18px; white-space: normal; }
+.web-studio Foldout { margin-top: 6px; }
+.web-studio HelpBox { margin-top: 6px; margin-bottom: 6px; }
+.web-studio.light { background-color: #eef1f6; color: #172b40; }
+.light .hero, .light .tabs, .light .footer { background-color: #dde5f0; }
+.light .card { background-color: #ffffff; }
+.light .muted { color: #4d6077; }
+.light .eyebrow { color: #326698; }
+.light .summary { color: #20684f; }
+.light .tab { background-color: #edf1f7; color: #40566e; }
+.light .tab.selected { background-color: #396c9e; color: #ffffff; }

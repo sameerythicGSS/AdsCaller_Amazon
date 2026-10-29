@@ -1,0 +1,10 @@
+{
+  "name": "AdsCaller.Core",
+  "rootNamespace": "AdsCaller",
+  "references": [
+    "UnityEngine.UI"
+  ],
+  "autoReferenced": true,
+  "overrideReferences": true,
+  "precompiledReferences": []
+}

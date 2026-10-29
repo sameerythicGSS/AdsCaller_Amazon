@@ -1,0 +1,7 @@
+{
+    "name": "OutBuildAutomator.Editor",
+    "rootNamespace": "OutBuild",
+    "includePlatforms": ["Editor"],
+    "autoReferenced": true,
+    "noEngineReferences": false
+}

@@ -1,0 +1,17 @@
+{
+  "name": "com.out.build-automator",
+  "version": "2.5.1",
+  "displayName": "Build Automator",
+  "description": "Editor-only build presets, WebGL Studio with browser preview and release packaging, Android discovery, deployment and diagnostics.",
+  "unity": "2022.3",
+  "keywords": [
+    "editor",
+    "build",
+    "android",
+    "adb",
+    "webgl"
+  ],
+  "author": {
+    "name": "Out Tools"
+  }
+}

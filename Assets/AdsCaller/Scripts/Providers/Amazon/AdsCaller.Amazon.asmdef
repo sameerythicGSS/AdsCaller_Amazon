@@ -1,0 +1,10 @@
+{
+  "name": "AdsCaller.Amazon",
+  "rootNamespace": "AdsCaller",
+  "references": [
+    "AdsCaller.Core",
+    "MaxSdk.Scripts",
+    "UnityEngine.UI"
+  ],
+  "autoReferenced": true
+}

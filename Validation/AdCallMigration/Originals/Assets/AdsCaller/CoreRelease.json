@@ -1,0 +1,313 @@
+{
+  "coreApi": 3,
+  "files": [
+    {
+      "path": "Assets/AdsCaller/AdsCaller-UPM-Guide.md",
+      "sha256": "a2d435366a445ede4cf3d98357940ab573ffc581a9d19844465f1b6f87c67c7b"
+    },
+    {
+      "path": "Assets/AdsCaller/AdsCaller-UPM-Guide.md.meta",
+      "sha256": "f704b307bdce4f111ce1033d6d9a76d4d5c7d38c236daf8d8f415b49db0b6300"
+    },
+    {
+      "path": "Assets/AdsCaller/Editor/Branding.meta",
+      "sha256": "b18fe1ea33453a148cda83dd3ed218daf4f16e26b234937174f496595a684a66"
+    },
+    {
+      "path": "Assets/AdsCaller/Editor/Branding/AdsCaller.png",
+      "sha256": "2a1482d5044a4880e4cf34b4e540ec5888130a5272f9098031d470a5dc582374"
+    },
+    {
+      "path": "Assets/AdsCaller/Editor/Branding/AdsCaller.png.meta",
+      "sha256": "781ed7b99cd8d3e66dcc48f91e94a91fa6a0903834addf40002c4cb0178306bd"
+    },
+    {
+      "path": "Assets/AdsCaller/Editor/Branding/AdsCallerCrossPromo.png",
+      "sha256": "1771201b1493c167308d0a2206bdbda1745198a8f65127c3e8803de2b543ad62"
+    },
+    {
+      "path": "Assets/AdsCaller/Editor/Branding/AdsCallerCrossPromo.png.meta",
+      "sha256": "bd0fc25379865ec5430e4faa76903813954a957b309442a2061e5c6171dd2645"
+    },
+    {
+      "path": "Assets/AdsCaller/Editor/ProjectReporter.meta",
+      "sha256": "180f58b98028bd5ac58e3c9348f7596f719690095d3988f12bf29256a01aa955"
+    },
+    {
+      "path": "Assets/AdsCaller/Editor/ProjectReporter/SamProjectReporter.Editor.asmdef",
+      "sha256": "34092ffc333b966e6f4414096785baf92fc2318a4f3bcdeef3e9db91640e25a3"
+    },
+    {
+      "path": "Assets/AdsCaller/Editor/ProjectReporter/SamProjectReporter.Editor.asmdef.meta",
+      "sha256": "340ec123be928cdbef13f95c42f720d10e79d95541755357231699826be6c831"
+    },
+    {
+      "path": "Assets/AdsCaller/Editor/ProjectReporter/SamProjectReporter.cs",
+      "sha256": "4bd0f9ae197726b211e365daeca62cdd36fcb4d2e46793c6eda498d4d9d3bc54"
+    },
+    {
+      "path": "Assets/AdsCaller/Editor/ProjectReporter/SamProjectReporter.cs.meta",
+      "sha256": "d66b4c0f7b8013b6f4128742b91d47004fac231f18559989bc2c983d9cd90f91"
+    },
+    {
+      "path": "Assets/AdsCaller/Package-Composition.md",
+      "sha256": "ff509e5585f682c3f15c39da6062b9cc16584f553ed9b26a6201d401e83ce7ee"
+    },
+    {
+      "path": "Assets/AdsCaller/Package-Composition.md.meta",
+      "sha256": "910d9809c0d74d7540f857402cf7934f304653fa3266bcdf82041c1edb780cc4"
+    },
+    {
+      "path": "Assets/AdsCaller/Prefabs/AdsMediator.prefab",
+      "sha256": "f65f6c9a0b0dc96d6d4e7ad431e393f02e0bb3fa57a14db64fd776f6dd864213"
+    },
+    {
+      "path": "Assets/AdsCaller/Prefabs/AdsMediator.prefab.meta",
+      "sha256": "9acdcf64a347e4456a87326d52e59d4666c7aa5e40cc8ed5737d1289962dbc5b"
+    },
+    {
+      "path": "Assets/AdsCaller/Prefabs/FbAnalytics.prefab",
+      "sha256": "429d9734501a4a56815d49667f0151a0e7d886f9cb2f7d050526f5b0cc82e5b2"
+    },
+    {
+      "path": "Assets/AdsCaller/Prefabs/FbAnalytics.prefab.meta",
+      "sha256": "b4eb25ea5d3f159e1ed5f5ed7d9cd5465be6b24e4f28110e87ff8e98663dc371"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/AdsCaller.Core.asmdef",
+      "sha256": "e348e168300ba026e89a3944f0e52dad682dc57ff88be27de87e6704ff367144"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/AdsCaller.Core.asmdef.meta",
+      "sha256": "60fe142cffba57eff9fa5bc43b74a481b298ab5d10f1e965184dee25d4760242"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Core/AdsAnalytics.cs",
+      "sha256": "b0613bbb4e23981c7fd8e2fad114b8a31119722cdb0afaa67d017372aeb29222"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Core/AdsAnalytics.cs.meta",
+      "sha256": "db3b728f42576b5119dfd906174a913678b00bc6004af5e5cf0bfb4ac1645558"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Core/AdsMediator.cs",
+      "sha256": "2bfe69ccd8e395a2b4ad3bc441a1196ef035ccf6bd49c8f6f87681404c8c1cac"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Core/AdsMediator.cs.meta",
+      "sha256": "9ed2b1412c71805ba08404bc037bf8c07ffacab6a9188b0d6a2a376b41a93cf8"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Core/AdsProviderRegistry.cs",
+      "sha256": "615f8ae2015a35ff7387b26e59117f4a6ba6792da569cb12c6b4b24d4637c8cd"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Core/AdsProviderRegistry.cs.meta",
+      "sha256": "fd01e869c5cdf751bd33789bf64a092622ba651105d93daf70c574d92710271a"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Core/IOutAdsProvider.cs",
+      "sha256": "c846e62b061639bff56db472813554b4852adffc3f512a78a6e33fd61b150ed2"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Core/IOutAdsProvider.cs.meta",
+      "sha256": "f2e9cc159cb4a86afabf84bfbc3057d9efacd2dcdd13306cbf865640b87b7d88"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Data/EnumsJar_Salon.cs",
+      "sha256": "e0906a329cf772766c3f8f79d18be3077eb18ebfb0706007990c90fcaedd1cd4"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Data/EnumsJar_Salon.cs.meta",
+      "sha256": "bb54729f592b113e28ee7337a53789f8f57db9bbe00ada84dd245e8bff5d9ed1"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCaller.Editor.asmdef",
+      "sha256": "0404c11046250757f4d627e77acefa15e96561cdb3b581468b9c0a998ea0a7d0"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCaller.Editor.asmdef.meta",
+      "sha256": "225cadd12fa038a3ae347fac8f263290933911a43f95d7afe6a15d57f79db61d"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerAssets.cs",
+      "sha256": "36db37d312f4da220cd21fffa3f4753b877c992f9b60c4d72352500280c0236c"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerAssets.cs.meta",
+      "sha256": "9a9fcbb1df3377d437121bed5455f932a07b5129003a9933ef82bb19f6c2e212"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerBootstrap.cs",
+      "sha256": "17d3b88f1aeb22db8bb9c475fe2d450477513df5ce8594a8ab54be73155e9b3d"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerBootstrap.cs.meta",
+      "sha256": "e256a003ce7b8fbef31ed7a44666d5b191aeea92beed14cae890190c4129eef8"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerImportGuard.cs",
+      "sha256": "3322100dd03d222bda3f7ab4a90988d7b05dcd05d3cb87a4705bc37f8c7384d1"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerImportGuard.cs.meta",
+      "sha256": "2419cce54ca7ee4ae57c0cf322c996fd1c94519d899a8c39ef71cea9b701e294"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerPackageExporter.cs",
+      "sha256": "f37ad0ed4ce825252764a226dcd21a3ebbddc8b745ece8cb95d24efd566c5885"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerPackageExporter.cs.meta",
+      "sha256": "a683f36300825cfdbdeb1fa60ec1ecfc646df44b6017c3b58a6c9009f22b9e66"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerSetup.cs",
+      "sha256": "387d8bab748cd0811b4421b2b765ec496e960338cebeb4ccb5e3fe6b5a26892c"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerSetup.cs.meta",
+      "sha256": "d2244e236432876f60be7925c0268961cff32430a77e1098e990429d8e583248"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Firebase/FbAnalytics.cs",
+      "sha256": "89f45696d35bb317ba8c679a8d08346a5e2a68c82e2c7a56dcd6f48389393780"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Firebase/FbAnalytics.cs.meta",
+      "sha256": "f4b9986757c933e1c04f83dd1748ef49ca4f2c4e0be60551080dfa88f72c97e7"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/General/Logger.cs",
+      "sha256": "69ca6d72d46086b91da24cf52e413f5f160214c8cd0ab4e57e057dcdbfe0874a"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/General/Logger.cs.meta",
+      "sha256": "9243488324d73da7a25ce3c5c944ea61d77f8100026240a2bda619159b0d04f2"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator.meta",
+      "sha256": "905224f0a87452dc6360a6b483ea5faacc67c17127c0c4fb1e4f58de21279efc"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/Adb.cs",
+      "sha256": "1182e34deb7549c8577d28457058f80bf74824894807c2143b8ed752c6f1f9b3"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/Adb.cs.meta",
+      "sha256": "7271a9a2120b89f6d34c20fd4f1b742d0b79fbce99054075a1f4dc3114b94595"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/BuildController.cs",
+      "sha256": "f111d5450a12f4f424b6f4454ab35940ed0cc4e9e1180839e6094ce98e27b8bf"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/BuildController.cs.meta",
+      "sha256": "ef3597d303489a964c017b0a33a9a7a2ffa9b1e7f4b7af4b7041a51d44ab4437"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/BuildDashboard.cs",
+      "sha256": "835317e239ed3d6c680b06520ccbb9ecd9def348fec352e72cbe62a69abfb5b7"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/BuildDashboard.cs.meta",
+      "sha256": "29873008b19553a4a838c9a0ea0eb861bf20f37f4b2ee2c2527b518552a2ab37"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/BuildJobs.cs",
+      "sha256": "706f56ef0ac78d0fff580fb27c04fd3dcce7a37e3fba40c7e651d7d134f5e21b"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/BuildJobs.cs.meta",
+      "sha256": "112275332d67b6a1b3a471c2ae04ad916b5a11d9033346b7f1ec7fbb9d124756"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/BuildRecovery.cs",
+      "sha256": "c7a082a8b4d7ec1d9a37e9627b5a957ba6e9cfa29c240fa6e10e485f6aade731"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/BuildRecovery.cs.meta",
+      "sha256": "1496cc6d7c99f9cb5b64edaac140079584a6c00bd98aaf6de14309447ab62491"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/BuildSettings.cs",
+      "sha256": "819052951b98a28212d24c7879f555b5e4f3ca62c417907db3cbd83abc300bc1"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/BuildSettings.cs.meta",
+      "sha256": "52b558fad5c7e8a03253ebdff39262de433de405ea47d4c7a2b663a3a75fc91f"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/MachineSettings.cs",
+      "sha256": "159dbe80280bd86c89a0e78874707742059b740b19c16ac7e026b0c05dc145e8"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/MachineSettings.cs.meta",
+      "sha256": "ee00b95f181cecf79b30fc1e034b6927aa977320357cba6a07187c2eafe2d977"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/OperationScheduler.cs",
+      "sha256": "05b8c817d91bc310808b341d546d2f78175f78b8fa28ee6729f0314978f6cf83"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/OperationScheduler.cs.meta",
+      "sha256": "1dc2136ea22a84d0152bfdbc1e27fe76aa3edaaf9035891a9bca63424ec34189"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/OutBuildAutomator.Editor.asmdef",
+      "sha256": "e88291fbc9af2a229d63067ab162879e0b58ce76b9b1d8df1020c75d530beeee"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/OutBuildAutomator.Editor.asmdef.meta",
+      "sha256": "b4a7aa247641dd3c3f77e77af3d63b560f6d74242e5572eeeb23c3855aba619d"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/README.md",
+      "sha256": "23b43e36727ca4ba32d45bcb3842a96c9e28bf09b9b7e737c9ad6def8df60ef4"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/README.md.meta",
+      "sha256": "9ee7ba76b05b2096af245f894e3c841b822459a92dfef22d1f2440a6df27c69f"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/package.json",
+      "sha256": "25997bf47033fa96197b1a0f8a7e8cff21c67ed2d9d234f4bfba775793910137"
+    },
+    {
+      "path": "Assets/Editor/BuildAutomator/package.json.meta",
+      "sha256": "8ba946f6f3691be8ad6b5208ac489016f16442147ea56460dc5ae98ce26080d4"
+    },
+    {
+      "path": "Assets/Editor/OutBuildAutomator.cs",
+      "sha256": "97a4d8ff8351fdf4db50a9115be037a290af3fc66b919f25336ba97f035cccc7"
+    },
+    {
+      "path": "Assets/Editor/OutBuildAutomator.cs.meta",
+      "sha256": "7591d099838e2f7655c855c70b2fe3dc6f38f577eccd20557de14bb728c14de1"
+    },
+    {
+      "path": "Assets/MMPHandler/AdsCaller.Core.asmref",
+      "sha256": "a73914e2a419c34621dacb0678e14251724027dfa7bf9021ecf24f7b78f54457"
+    },
+    {
+      "path": "Assets/MMPHandler/AdsCaller.Core.asmref.meta",
+      "sha256": "a67f95295cab2971c67af1760e20a4219ce568b95de00c42ed107e34611b0f64"
+    },
+    {
+      "path": "Assets/MMPHandler/SEHandler.cs",
+      "sha256": "8603cd13dfbed6beb3d26f09bacc94b1acc052d2a1bd607c13bdbdca9168b979"
+    },
+    {
+      "path": "Assets/MMPHandler/SEHandler.cs.meta",
+      "sha256": "e3768618143ffff89e7343ce7ddf56258cbd8b11b7e230545b5b7ee14062945e"
+    },
+    {
+      "path": "Assets/MMPHandler/SEHandler.prefab",
+      "sha256": "df655bed166c408c0bad45d8afd46fab1689afdae2ac6957cf89a5376ce5d0f0"
+    },
+    {
+      "path": "Assets/MMPHandler/SEHandler.prefab.meta",
+      "sha256": "54096cb52ac76e8f229fd6e56909e1c492bb54e086563f21ab8e81356c462dd3"
+    }
+  ]
+}

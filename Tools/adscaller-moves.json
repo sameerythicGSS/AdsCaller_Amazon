@@ -1,0 +1,21 @@
+{
+  "Assets/AdsCaller/Scripts/Core/AdsCaller.cs": "Assets/AdsCaller/Scripts/Providers/Amazon/AdsCaller.cs",
+  "Assets/AdsCaller/Scripts/Core/AdsCallerConfig.cs": "Assets/AdsCaller/Scripts/Providers/Amazon/AdsCallerConfig.cs",
+  "Assets/AdsCaller/Scripts/Others/EnumsJar.cs": "Assets/AdsCaller/Scripts/Providers/Amazon/EnumsJar.cs",
+  "Assets/AdsCaller/Scripts/Others/FakeLoading.cs": "Assets/AdsCaller/Scripts/Providers/Amazon/FakeLoading.cs",
+  "Assets/AdsCaller/Scripts/Others/InAppCallbacks_AMZ.cs": "Assets/AdsCaller/Scripts/Providers/Amazon/InAppCallbacks_AMZ.cs",
+  "Assets/AdsCaller/Scripts/Others/InAppPurchaser_AMZ.cs": "Assets/AdsCaller/Scripts/Providers/Amazon/InAppPurchaser_AMZ.cs",
+  "Assets/AdsCaller/Scripts/Editor/AdsCallerConfigEditor.cs": "Assets/AdsCaller/Scripts/Providers/Amazon/Editor/AdsCallerConfigEditor.cs",
+  "Assets/AdsCaller/Scripts/Editor/AdsCredentialsPopup.cs": "Assets/AdsCaller/Scripts/Providers/Amazon/Editor/AdsCredentialsPopup.cs",
+  "Assets/AdsCaller/GSS-UPM-Guide.md": "Assets/AdsCaller/AdsCaller-UPM-Guide.md",
+  "Assets/AdsCaller/GSSAssetIndex.json": "Assets/AdsCaller/AdsCallerAssetIndex.json",
+  "Assets/AdsCaller/Scripts/GSS.AdsCaller.Core.asmdef": "Assets/AdsCaller/Scripts/AdsCaller.Core.asmdef",
+  "Assets/AdsCaller/Bootstrap/Main/GSS Ads Caller Main.prefab": "Assets/AdsCaller/Bootstrap/Main/Ads Caller Main.prefab",
+  "Assets/AdsCaller/Scripts/Editor/GSS.AdsCaller.Editor.asmdef": "Assets/AdsCaller/Scripts/Editor/AdsCaller.Editor.asmdef",
+  "Assets/AdsCaller/Scripts/Editor/GSSAdsAssets.cs": "Assets/AdsCaller/Scripts/Editor/AdsCallerAssets.cs",
+  "Assets/AdsCaller/Scripts/Editor/GSSAdsBootstrap.cs": "Assets/AdsCaller/Scripts/Editor/AdsCallerBootstrap.cs",
+  "Assets/AdsCaller/Scripts/Providers/Amazon/GSS.AdsCaller.Amazon.asmdef": "Assets/AdsCaller/Scripts/Providers/Amazon/AdsCaller.Amazon.asmdef",
+  "Assets/AdsCaller/Scripts/Providers/Amazon/Editor/GSS.AdsCaller.Amazon.Editor.asmdef": "Assets/AdsCaller/Scripts/Providers/Amazon/Editor/AdsCaller.Amazon.Editor.asmdef",
+  "Assets/MMPHandler/GSS.AdsCaller.Core.asmref": "Assets/MMPHandler/AdsCaller.Core.asmref",
+  "Assets/GSSValidation/Editor/GSSValidation.cs": "Assets/AdsCallerPackageValidation/Editor/AdsCallerPackageValidation.cs"
+}

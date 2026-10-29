@@ -1,0 +1,12 @@
+﻿<Solution>
+  <Project Path="AdsCaller.Editor.csproj" />
+  <Project Path="OutBuildAutomator.Editor.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="MaxSdk.Scripts.csproj" />
+  <Project Path="MaxSdk.Scripts.IntegrationManager.Editor.csproj" />
+  <Project Path="AdsCaller.Amazon.csproj" />
+  <Project Path="AdsCaller.Core.csproj" />
+  <Project Path="AdsCaller.Amazon.Editor.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="SamProjectReporter.Editor.csproj" />
+</Solution>
