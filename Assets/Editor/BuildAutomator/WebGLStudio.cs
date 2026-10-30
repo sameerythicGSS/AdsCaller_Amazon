@@ -120,6 +120,24 @@ namespace OutBuild
             try { Text(card, "Output: " + BuildStorage.BuildOutputRoot(Controller.Preset, shared: Controller.machine), "path"); }
             catch (Exception e) { Notice(card, e.Message); }
             if (Controller.Preset.overrideMachineOutput) Notice(card, "This preset uses a project output override. Change it in More settings below.");
+            Text(card, "Copy destinations (shared): copies only the main build artifact. Manifests and automator helper files stay at the primary location.", "muted");
+            foreach (string destination in Controller.machine.additionalOutputFolders)
+            {
+                string saved = destination;
+                var copyRow = Box(card, "row");
+                var copyFolder = new TextField { value = saved, isDelayed = true };
+                copyFolder.AddToClassList("grow"); copyRow.Add(copyFolder);
+                copyFolder.RegisterValueChangedCallback(e => Try(() => { Controller.ChangeMachine(() => Controller.sharedStore.ReplaceOutputFolder(saved, e.newValue)); Draw(); }));
+                Action(copyRow, "Browse", () => {
+                    string path = EditorUtility.OpenFolderPanel("Choose copy destination", Directory.Exists(saved) ? saved : BuildStorage.Root, "");
+                    if (path.Length > 0) Try(() => { Controller.ChangeMachine(() => Controller.sharedStore.ReplaceOutputFolder(saved, path)); Draw(); });
+                });
+                Action(copyRow, "Remove", () => Try(() => { Controller.ChangeMachine(() => Controller.sharedStore.RemoveOutputFolder(saved)); Draw(); }));
+            }
+            Action(card, "Add copy destination", () => {
+                string path = EditorUtility.OpenFolderPanel("Add copy destination", BuildStorage.Root, "");
+                if (path.Length > 0) Try(() => { Controller.ChangeMachine(() => Controller.sharedStore.AddOutputFolder(path)); Draw(); });
+            });
 
             card = Card(parent, "Delivery recipe", "Choose a starting point, then reveal only the settings you need.");
             var recipes = Box(card, "row wrap");

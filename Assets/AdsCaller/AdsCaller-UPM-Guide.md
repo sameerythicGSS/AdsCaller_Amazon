@@ -32,7 +32,7 @@ CrossPromo declares Addressables and Newtonsoft JSON in `package.json`. The inst
 | `com.adscaller.family.sdk.admob` | Bundled Google Mobile Ads/UMP and Android native plugin |
 | `com.adscaller.family.sdk.edm` | Bundled External Dependency Manager |
 
-Core and Main are version 5.1.0. CrossPromo 5.1.0 targets Unity 2022.3 with Addressables 1.29.0; CrossPromo 5.1.1 targets Unity 6 with Addressables 3.1.0. Both require Newtonsoft JSON 3.2.2. Use the export from the matching CrossPromo source project. Android and Amazon are alternative Main providers; remove one before switching. When SDK bundling is disabled, supply compatible SDKs separately, as with the previous exporter.
+Every exported module uses the version entered in Package Exporter, including Core dependencies and SDK snapshots. UPM requires three numeric components, so 2.5 is normalized to 2.5.0 in filenames and manifests. CrossPromo from Unity 2022.3 uses Addressables 1.29.0; CrossPromo from Unity 6 uses Addressables 3.1.0. Both require Newtonsoft JSON 3.2.2. Use the export from the matching CrossPromo source project. Android and Amazon are alternative Main providers; remove one before switching. When SDK bundling is disabled, supply compatible SDKs separately, as with the previous exporter.
 
 Future `main.ios`, addon and proprietary SDK packages can follow the same family. These packages are bundled locally; they are not published to Unity's public registry.
 
@@ -42,7 +42,7 @@ The optional maintainer tool `Tools/adscaller_upm.py` still builds local folders
 
 In **Ads Caller > Package Exporter**, set **Export format** to **UPM tarballs (.tgz)**, then export Main, CrossPromo, Combined, or **Export All Ready**. The selection is saved per project; existing preferences default to the Unity installer format.
 
-Each composition creates a `<package-name>-v<version>-UPM` folder containing a native `.tgz` for each selected module and a README with the dependency installation order. Module identities, versions, source values and metadata match the installer export. The version field labels the export folder; it does not override module versions. The network-SDK toggle controls SDK inclusion in both formats. Replacing a tarball export keeps the previous folder beside it as a `.previous-*` backup.
+Each composition creates a `<package-name>-v<version>-UPM` folder containing a native `.tgz` for each selected module and a README with the dependency installation order. Module identities, versions, source values and metadata match the installer export. The version field sets every module version, internal dependency and filename in both export formats. The network-SDK toggle controls SDK inclusion in both formats. Replacing a tarball export keeps the previous folder beside it as a `.previous-*` backup.
 
 Use the destination's built-in **Package Manager > + > Install package from tarball** (or **Add package from tarball**) and install the files in the README's order. Private dependencies must be installed before their dependent modules because this family is not on the public registry. Public dependencies such as Addressables and Newtonsoft resolve through UPM. Keep referenced tarballs at a stable path and in source control. This installation path works with unrelated compilation errors, including Safe Mode, without executing the Ads Caller C# installer. Setup Wizard and scene editing still require successful compilation.
 
@@ -129,3 +129,13 @@ With official SDKs installed, install only `core`, `main.android` or `main.amazo
 EDM has no Ads Caller version or package-identity requirement. Keep any official EDM version compatible with your Unity editor and vendor SDKs, whether imported under Assets or installed through UPM. Optional MAX and AdMob snapshots also accept that installation and do not depend on `com.adscaller.family.sdk.edm`. Install the EDM snapshot only when no EDM is installed. SDK recognition uses public types and assemblies rather than matching the exporting project's package names, paths or versions; SDK API compatibility is still required.
 
 Re-export old distributions to get the 5.1 manifests. Existing 5.0 archives remain unchanged and retain their previous private dependencies.
+
+## Optional Firebase SDK and source control
+
+Android compiles with or without the official Firebase SDK. The analytics adapter discovers Firebase App and Analytics types at runtime; no scripting define or Firebase DLL reference is needed. Without those types, enabling Firebase in the config has no effect. Reinstall the official Firebase Analytics Unity SDK to restore analytics. Firebase TaskExtension and Remote Config are not required by the adapter. The linker preserves the optional SDK entry points for player builds.
+
+The unused legacy FirebaseManager source is retained under Legacy/ArchivedFirebase~, which Unity does not compile. Legacy AdsManager revenue now uses the shared analytics bus.
+
+In the Android source repository, Firebase vendor files are ignored and retained locally, while the small Ads Caller integration remains tracked. Fresh clones compile without Firebase. On first successful import without Firebase, the Android editor integration clears obsolete Firebase Gradle entries and replaces the Firebase Messaging activity/service with the standard Unity activity. Installing Messaging again requires its usual vendor manifest setup. EDM4U, MAX and Google Mobile Ads remain required.
+
+Existing commits still contain the previous Firebase/LFS objects. Removing files from the current Git index does not erase history or shrink an initial push containing those commits. History cleanup or a new clean repository is a separate operation.

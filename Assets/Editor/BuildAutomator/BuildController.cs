@@ -456,12 +456,17 @@ namespace OutBuild
             // Snapshot user intent before preempting discovery or waiting for the next Editor tick.
             var preset = JsonUtility.FromJson<BuildPreset>(JsonUtility.ToJson(Preset));
             string requestedVersion = version, output;
+            string[] copyFolders;
             int requestedCode = code;
             BuildTarget requestedTarget = BuildJobs.Target;
             var targets = Selected.Select(d => d.Id).ToArray();
             if (run && requestedTarget == BuildTarget.Android && targets.Length != local.selectedDevices.Count)
             { SetMessage("Reconnect or deselect unavailable devices before Build & Run.", MessageType.Warning); return; }
-            try { output = BuildStorage.BuildOutputRoot(preset, shared: machine); }
+            try
+            {
+                output = BuildStorage.BuildOutputRoot(preset, shared: machine);
+                copyFolders = BuildStorage.CopyOutputRoots(output, machine.additionalOutputFolders);
+            }
             catch (Exception e) { SetMessage(e.Message, MessageType.Error); return; }
             StartOperation("Preparing build", async token =>
             {
@@ -476,10 +481,13 @@ namespace OutBuild
                 SaveLocal();
                 SetMessage("Building. Unity controls build progress.", MessageType.Info);
                 BuildRecord record;
-                try { record = BuildJobs.Build(preset, requestedVersion, requestedCode, run && requestedTarget != BuildTarget.Android, output); }
+                try { record = BuildJobs.Build(preset, requestedVersion, requestedCode, run && requestedTarget != BuildTarget.Android, output, copyFolders); }
                 finally { LoadLocal(); ReadVersion(); }
                 if (record.result != "Succeeded") throw new InvalidOperationException("Build " + record.result + ". Settings were restored. See Unity Console.");
-                SetMessage("Build succeeded: " + record.path + (run && !record.IsApk ? "\n" + record.deployment : ""), MessageType.Info);
+                SetMessage("Build succeeded: " + record.path + (run && !record.IsApk ? "\n" + record.deployment : "") +
+                    (record.copiedLocations.Count > 0 ? "\nCopied to " + record.copiedLocations.Count + " additional location(s)." : "") +
+                    (record.copyErrors.Count > 0 ? "\nCopy failed:\n" + string.Join("\n", record.copyErrors) : ""),
+                    record.copyErrors.Count > 0 ? MessageType.Warning : MessageType.Info);
                 SaveLocal();
                 if (machine.revealBuild) EditorUtility.RevealInFinder(record.path);
                 if (run && record.IsApk) await Deploy(record, targets, token);
@@ -519,7 +527,10 @@ namespace OutBuild
                     record.deployment = string.Join("\n", outcomes);
                     SaveDeployment(record);
                 }
-                SetMessage("Build succeeded. Deployment results:\n" + string.Join("\n", outcomes), outcomes.All(o => o.EndsWith(": installed and launched", StringComparison.Ordinal)) ? MessageType.Info : MessageType.Warning);
+                var copyErrors = record.copyErrors ?? new List<string>();
+                SetMessage("Build succeeded. Deployment results:\n" + string.Join("\n", outcomes) +
+                    (copyErrors.Count > 0 ? "\nCopy failed:\n" + string.Join("\n", copyErrors) : ""),
+                    copyErrors.Count == 0 && outcomes.All(o => o.EndsWith(": installed and launched", StringComparison.Ordinal)) ? MessageType.Info : MessageType.Warning);
             }
             catch (OperationCanceledException) { outcomes.Add("Deployment interrupted. No automatic retry; check the device before retrying."); throw; }
             catch (Exception e) { outcomes.Add(e.Message); throw; }

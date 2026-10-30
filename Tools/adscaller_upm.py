@@ -10,8 +10,11 @@ import argparse, datetime, hashlib, json, os, re, shutil, sys, tarfile, uuid
 ROOT=Path(__file__).resolve().parents[1]
 BASE=ROOT.parent
 PREFIX='com.adscaller.family.'
-CORE='5.1.0'
-CROSS6='5.1.1'
+def release_version(value):
+    if re.fullmatch(r'(0|[1-9]\d*)\.(0|[1-9]\d*)', value): value += '.0'
+    if not re.fullmatch(r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?', value):
+        raise ValueError('Invalid package version: '+value)
+    return value
 
 def package_name(module):
     return PREFIX + ({'android':'main.android', 'amazon':'main.amazon', 'crosspromo':'cross-promo'}.get(module,module))
@@ -41,13 +44,17 @@ def roots_from_exporter(name):
     s=(ROOT/'Assets/AdsCaller/Scripts/Editor/AdsCallerPackageExporter.cs').read_text()
     return re.findall(r'"(Assets/[^\"]+)"',s.split('string[] '+name+' =')[1].split('};',1)[0])
 
-def build(output):
+def build(output, version=None):
+    if version is None:
+        prefs = json.loads((ROOT/'UserSettings/AdsCallerPackageExporter.json').read_text(encoding='utf-8-sig'))
+        version = prefs['packageVersion']
+    CORE = CROSS6 = release_version(version)
     output=output.resolve()
     if output.exists() and any(output.iterdir()): raise RuntimeError('Use a new output folder; previous releases are immutable: '+str(output))
     output.mkdir(parents=True,exist_ok=True)
     catalog={'schema':1,'packages':{},'legacy':{},'created':datetime.datetime.now().isoformat()}
     for variant,project_name in [('android','AdsCaller-Android'),('amazon','TestingAmazonAds'),('crosspromo6','SalonAds-CrossPromo'),('crosspromo2022','SalonAds-CrossPromo-2022')]:
-        project=BASE/project_name
+        project=ROOT if variant=='android' else ROOT.parent.parent/'Projects_Amazon/_TestProjects'/({'amazon':'AdsCaller_Amazon','crosspromo6':'AdsCaller-CrossPromo','crosspromo2022':'SalonAds-CrossPromo-2022'}[variant])
         mapping=json.loads((project/'Tools/adscaller-moves.json').read_text())
         selections={}
         if variant=='android':
@@ -68,7 +75,10 @@ def build(output):
                 'com.unity.ugui':'1.0.0' if old else '2.0.0'})
         for module,(roots,version,unity,deps) in selections.items():
             name=package_name(module); key=name+'@'+version
-            destination=output/'packages'/key
+            if module=='crosspromo': key += '-unity'+('2022' if variant.endswith('2022') else '6')
+            destination=output/'packages'
+            if module=='crosspromo': destination /= 'unity2022' if variant.endswith('2022') else 'unity6'
+            destination /= name+'@'+version
             selected=files(project,roots,mapping)
             entries=[]; legacy=[]
             for source in sorted(selected):
@@ -127,7 +137,10 @@ def build(output):
                 asset_guid=uuid.uuid5(uuid.NAMESPACE_URL,name+'/'+asset.relative_to(destination).as_posix()).hex
                 write(metadata,'fileFormatVersion: 2\nguid: '+asset_guid+'\n'+('folderAsset: yes\n' if asset.is_dir() else ''))
             # Tarballs and local package folders are both supported; no private registry is assumed.
-            archive=output/(key+'.tgz')
+            archive=output
+            if module=='crosspromo': archive /= 'Unity2022' if variant.endswith('2022') else 'Unity6'
+            archive.mkdir(parents=True,exist_ok=True)
+            archive /= name+'-'+version+'.tgz'
             with tarfile.open(archive,'w:gz') as tar: tar.add(destination,arcname='package')
             catalog['packages'][key]=dict(name=name,version=version,unity=unity,path=destination.relative_to(output).as_posix(),dependencies=deps)
             catalog['legacy'][key]=legacy
@@ -148,14 +161,19 @@ def install(project,release,online,cross,migrate=False):
     if not online and not cross: raise RuntimeError('Choose --online android/amazon and/or --crosspromo')
     catalog=json.loads((release/'release.json').read_text()); selected={}
     def add(name,version):
-        key=name+'@'+version
+        key=next((k for k,p in catalog['packages'].items() if p['name']==name and p['version']==version and (not name.endswith('cross-promo') or (int(p['unity'].split('.')[0])>=6000)==is6)),name+'@'+version)
         if key not in catalog['packages']: raise RuntimeError('Missing dependency in release: '+key)
         if name in selected: return
         selected[name]=catalog['packages'][key]
         for dep,ver in selected[name]['dependencies'].items():
             if dep.startswith(PREFIX): add(dep,ver)
-    if online: add(package_name(online),CORE)
-    if cross: add(package_name('crosspromo'),CROSS6 if is6 else CORE)
+    def select(name):
+        matches=[p for p in catalog['packages'].values() if p['name']==name and
+                 (int(p['unity'].split('.')[0]) >= 6000) == is6] if name.endswith('cross-promo') else [p for p in catalog['packages'].values() if p['name']==name]
+        if len(matches)!=1: raise RuntimeError('Expected one compatible release for '+name)
+        add(name,matches[0]['version'])
+    if online: select(package_name(online))
+    if cross: select(package_name('crosspromo'))
     manifest_path=project/'Packages/manifest.json'
     manifest=json.loads(manifest_path.read_text()) if manifest_path.exists() else {'dependencies':{}}
     dependencies=manifest.setdefault('dependencies',{})
@@ -172,7 +190,7 @@ def install(project,release,online,cross,migrate=False):
         if g: source_guids.setdefault(g,[]).append(Path(str(m)[:-5]))
     overlaps=[]
     for item in selected.values():
-        key=item['name']+'@'+item['version']
+        key=next(k for k,p in catalog['packages'].items() if p==item)
         for asset in catalog['legacy'][key]:
             for old in source_guids.get(asset['guid'],[]):
                 overlaps.append((old,asset))
@@ -231,10 +249,11 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     sub=parser.add_subparsers(dest='command',required=True)
     b=sub.add_parser('build'); b.add_argument('--output',type=Path,default=ROOT/'PackageExports/AdsCaller-UPM'/datetime.datetime.now().strftime('%Y%m%d-%H%M%S'))
+    b.add_argument('--version',help='Release version; defaults to Package Exporter preferences')
     i=sub.add_parser('install'); i.add_argument('--project',type=Path,required=True); i.add_argument('--release',type=Path,required=True)
     i.add_argument('--online',choices=['android','amazon']); i.add_argument('--crosspromo',action='store_true'); i.add_argument('--migrate-legacy',action='store_true')
     args=parser.parse_args()
-    if args.command=='build': build(args.output)
+    if args.command=='build': build(args.output,args.version)
     else: install(args.project,args.release,args.online,args.crosspromo,args.migrate_legacy)
 
 if __name__=='__main__': main()

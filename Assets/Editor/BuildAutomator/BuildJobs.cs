@@ -81,12 +81,13 @@ namespace OutBuild
             return errors;
         }
 
-        public static BuildRecord Build(BuildPreset preset, string version, int code, bool autoRunDesktop, string outputOverride = null)
+        public static BuildRecord Build(BuildPreset preset, string version, int code, bool autoRunDesktop, string outputOverride = null, string[] copyFolders = null)
         {
             if (Busy || BuildPipeline.isBuildingPlayer) throw new BuildFailedException("Another build is in progress.");
             string recovery = BuildRecovery.Recover();
             if (recovery.StartsWith("Build recovery needs attention", StringComparison.Ordinal)) throw new BuildFailedException(recovery);
             string root = BuildStorage.BuildOutputRoot(preset, outputOverride);
+            string[] copyRoots = BuildStorage.CopyOutputRoots(root, copyFolders ?? BuildStorage.MachineStore.Read().additionalOutputFolders.ToArray());
             var errors = Validate(preset, version, code, false, false, "", root);
             if (errors.Count > 0) throw new BuildFailedException(string.Join("\n", errors));
             Busy = true;
@@ -169,6 +170,25 @@ namespace OutBuild
                         record.deployment = Target == BuildTarget.WebGL ? "Browser preview requested: " + WebPreview.Url : "Player launch requested.";
                     }
                     catch (Exception e) { record.deployment = "Build succeeded; player launch failed: " + e.Message; }
+                }
+                if (succeeded)
+                {
+                    foreach (string destination in copyRoots)
+                    {
+                        try
+                        {
+                            EditorUtility.DisplayProgressBar("Build Automator", "Copying build to " + destination, 0.95f);
+                            BuildStorage.CopyPublishedBuild(record.path, destination);
+                            record.copiedLocations.Add(Path.Combine(destination, Path.GetFileName(record.path)));
+                        }
+                        catch (Exception e)
+                        {
+                            string error = destination + ": " + e.Message;
+                            record.copyErrors.Add(error);
+                            Debug.LogWarning("[Build Automator] Build succeeded; copy failed: " + error);
+                        }
+                        finally { EditorUtility.ClearProgressBar(); }
+                    }
                 }
                 return record;
             }

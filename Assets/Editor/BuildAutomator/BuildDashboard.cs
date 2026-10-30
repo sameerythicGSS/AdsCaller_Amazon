@@ -17,6 +17,48 @@ namespace OutBuild
         private bool advanced, setup, showSigning;
         private int tab, setupType;
         private Vector2 scroll;
+        private GUIStyle heroStyle, cardStyle, bodyStyle, deviceNameStyle, connectedStyle;
+        private bool styledForDarkSkin;
+
+        private void EnsureStyles()
+        {
+            if (heroStyle != null && styledForDarkSkin == EditorGUIUtility.isProSkin) return;
+            styledForDarkSkin = EditorGUIUtility.isProSkin;
+            heroStyle = new GUIStyle(EditorStyles.boldLabel) { fontSize = 21, margin = new RectOffset(0, 0, 4, 4) };
+            cardStyle = new GUIStyle(EditorStyles.helpBox) { padding = new RectOffset(14, 14, 12, 12), margin = new RectOffset(0, 0, 0, 12) };
+            bodyStyle = new GUIStyle { padding = new RectOffset(16, 16, 12, 16) };
+            deviceNameStyle = new GUIStyle(EditorStyles.boldLabel) { clipping = TextClipping.Clip };
+            connectedStyle = new GUIStyle(EditorStyles.miniBoldLabel) { alignment = TextAnchor.MiddleCenter, padding = new RectOffset(8, 8, 2, 2) };
+        }
+
+        private void DrawHeader()
+        {
+            using (new EditorGUILayout.VerticalScope(cardStyle))
+            {
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    GUILayout.Label("BUILD AUTOMATOR  /  " + BuildJobs.Target.ToString().ToUpperInvariant(), EditorStyles.miniBoldLabel);
+                    GUILayout.FlexibleSpace();
+                    if (SimpleControls)
+                    {
+                        if (GUILayout.Button("Full Controls", GUILayout.Width(100))) BuildFullControlsDashboard.Open();
+                    }
+                    else if (GUILayout.Button("Help", GUILayout.Width(60))) OpenGuide();
+                }
+                GUILayout.Label("Build. Connect. Run.", heroStyle);
+                GUILayout.Label("Prepare your release and choose where it runs.", EditorStyles.wordWrappedMiniLabel);
+            }
+        }
+
+        private void DrawConnectedBadge()
+        {
+            var badge = GUILayoutUtility.GetRect(new GUIContent("Connected"), connectedStyle, GUILayout.Width(86), GUILayout.Height(21));
+            EditorGUI.DrawRect(badge, new Color(0.2f, 1f, 0.35f));
+            var previousColor = GUI.contentColor;
+            GUI.contentColor = Color.black;
+            GUI.Label(badge, new GUIContent("Connected", "ADB has verified an authorized connection to this device. Build selection is separate."), connectedStyle);
+            GUI.contentColor = previousColor;
+        }
         private string endpoint = "", pairingEndpoint = "", pairingCode = "";
         protected abstract bool SimpleControls { get; }
         private PresetFile presets { get { return Controller.presets; } set { Controller.presets = value; } }
@@ -82,10 +124,33 @@ namespace OutBuild
                 EditorGUILayout.HelpBox("Choose a folder once to use it in every project. Until then, each project's preset folder is used.", MessageType.None);
             if (Preset.overrideMachineOutput)
                 EditorGUILayout.HelpBox("This preset has a project-only output override. Disable it under Advanced to use the shared location.", MessageType.Info);
+            EditorGUILayout.LabelField("Copy destinations — shared across projects", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Build once at the effective output above, then copy only the main build artifact. Manifests and automator helper files stay there.", EditorStyles.wordWrappedMiniLabel);
+            foreach (string destination in machine.additionalOutputFolders.ToArray())
+            {
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    EditorGUI.BeginChangeCheck();
+                    string folder = EditorGUILayout.DelayedTextField(destination);
+                    if (EditorGUI.EndChangeCheck()) ChangeMachine(() => sharedStore.ReplaceOutputFolder(destination, folder));
+                    if (GUILayout.Button("Browse...", GUILayout.Width(90)))
+                    {
+                        string chosen = EditorUtility.OpenFolderPanel("Choose copy destination", Directory.Exists(destination) ? destination : BuildStorage.Root, "");
+                        if (!string.IsNullOrEmpty(chosen)) ChangeMachine(() => sharedStore.ReplaceOutputFolder(destination, chosen));
+                    }
+                    if (GUILayout.Button("Remove", GUILayout.Width(65))) ChangeMachine(() => sharedStore.RemoveOutputFolder(destination));
+                }
+            }
+            if (GUILayout.Button("Add copy destination..."))
+            {
+                string chosen = EditorUtility.OpenFolderPanel("Add copy destination", BuildStorage.Root, "");
+                if (!string.IsNullOrEmpty(chosen)) ChangeMachine(() => sharedStore.AddOutputFolder(chosen));
+            }
         }
         protected void OnGUI()
         {
             if (local == null || presets == null) return;
+            EnsureStyles();
             if (BuildJobs.Target == BuildTarget.WebGL)
             {
                 EditorGUILayout.HelpBox("WebGL Studio brings browser preview, download budgets and hosting tools into one workflow.", MessageType.Info);
@@ -98,15 +163,9 @@ namespace OutBuild
 
         private void DrawSimple()
         {
-            using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
-            {
-                GUILayout.Label("BUILD AUTOMATOR", EditorStyles.boldLabel);
-                GUILayout.FlexibleSpace();
-                GUILayout.Label(BuildJobs.Target.ToString(), EditorStyles.miniLabel);
-                if (GUILayout.Button("Show Full Controls", EditorStyles.toolbarButton)) BuildFullControlsDashboard.Open();
-            }
+            DrawHeader();
             scroll = EditorGUILayout.BeginScrollView(scroll);
-            EditorGUILayout.Space(8);
+            EditorGUILayout.BeginVertical(bodyStyle);
             EditorGUILayout.HelpBox(message, messageType);
             if (Controller.scheduler.ForegroundBusy)
             {
@@ -117,11 +176,15 @@ namespace OutBuild
                 }
             }
             {
+                EditorGUILayout.BeginVertical(cardStyle);
+                EditorGUILayout.LabelField("01   Release setup", EditorStyles.boldLabel);
+                EditorGUILayout.Space(6);
                 DrawPresetSelector();
                 version = EditorGUILayout.TextField("Version", version);
                 if (BuildJobs.Target == BuildTarget.Android || BuildJobs.Target == BuildTarget.iOS)
                     code = EditorGUILayout.IntField("Build / version code", code);
                 DrawBuildLocation();
+                EditorGUILayout.EndVertical();
                 if (BuildJobs.Target == BuildTarget.Android) DrawSimpleDevices();
 
                 DrawInlineSetup();
@@ -138,24 +201,27 @@ namespace OutBuild
                 }
                 if (errors.Count == 0 && runErrors.Count > 0)
                     EditorGUILayout.HelpBox(string.Join("\n", runErrors), MessageType.None);
-                EditorGUILayout.Space(10);
-                if (GUILayout.Button("Show Full Controls", GUILayout.Height(28))) BuildFullControlsDashboard.Open();
             }
+            EditorGUILayout.EndVertical();
             EditorGUILayout.EndScrollView();
         }
 
         private void DrawSimpleDevices()
         {
-            EditorGUILayout.Space(6);
-            using (new EditorGUILayout.HorizontalScope())
+            using (new EditorGUILayout.VerticalScope(cardStyle))
             {
-                EditorGUILayout.LabelField("Devices", EditorStyles.boldLabel);
-                using (new EditorGUI.DisabledScope(Conflicting))
-                    if (GUILayout.Button("Refresh", GUILayout.Width(80))) StartOperation("Refreshing devices", RefreshDevices);
-                if (GUILayout.Button("Setup", GUILayout.Width(65))) setup = !setup;
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    EditorGUILayout.LabelField("02   Deployment devices", EditorStyles.boldLabel);
+                    using (new EditorGUI.DisabledScope(Conflicting))
+                        if (GUILayout.Button("Refresh", GUILayout.Width(80))) StartOperation("Refreshing devices", RefreshDevices);
+                    if (GUILayout.Button("Setup", GUILayout.Width(65))) setup = !setup;
+                }
+                EditorGUILayout.LabelField(Selected.Count + " ready / " + local.selectedDevices.Count + " selected for deployment", EditorStyles.wordWrappedMiniLabel);
+                EditorGUILayout.Space(6);
+                DrawDeviceGroups(true);
+                if (setup) DrawSetup();
             }
-            DrawDeviceGroups(true);
-            if (setup) DrawSetup();
         }
         private void DrawPresetSelector()
         {
@@ -231,16 +297,10 @@ namespace OutBuild
 
         private void DrawFullControls()
         {
-            using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
-            {
-                GUILayout.Label("BUILD AUTOMATOR", EditorStyles.boldLabel);
-                GUILayout.FlexibleSpace();
-                GUILayout.Label(BuildJobs.Target.ToString(), EditorStyles.miniLabel);
-                if (GUILayout.Button("Help", EditorStyles.toolbarButton)) OpenGuide();
-            }
-            tab = GUILayout.Toolbar(tab, new[] { "Build", "Devices", "History" });
+            DrawHeader();
+            tab = GUILayout.Toolbar(tab, new[] { "01   Build", "02   Devices", "03   History" }, GUILayout.Height(28));
             scroll = EditorGUILayout.BeginScrollView(scroll);
-            EditorGUILayout.Space(8);
+            EditorGUILayout.BeginVertical(bodyStyle);
             EditorGUILayout.HelpBox(message, messageType);
             if (Controller.scheduler.ForegroundBusy)
             {
@@ -251,10 +311,14 @@ namespace OutBuild
                 }
             }
             {
-                if (tab == 0) DrawBuild();
-                if (tab == 1) DrawDevices();
+                if (tab != 2) using (new EditorGUILayout.VerticalScope(cardStyle))
+                {
+                    if (tab == 0) DrawBuild();
+                    if (tab == 1) DrawDevices();
+                }
                 if (tab == 2) DrawHistory();
             }
+            EditorGUILayout.EndVertical();
             EditorGUILayout.EndScrollView();
         }
 
@@ -430,10 +494,12 @@ namespace OutBuild
                         bool next = EditorGUILayout.Toggle(selected, GUILayout.Width(18));
                         if (next != selected) SelectTransport(saved, device.Id, next);
                     }
-                    GUILayout.Label(string.IsNullOrEmpty(saved.nickname) ? saved.model : saved.nickname, EditorStyles.boldLabel);
+                    string name = string.IsNullOrEmpty(saved.nickname) ? saved.model : saved.nickname;
+                    GUILayout.Label(new GUIContent(name, name), deviceNameStyle, GUILayout.MinWidth(0), GUILayout.MaxWidth(Mathf.Max(80, position.width - 230)), GUILayout.ExpandWidth(false));
+                    if (live.Any(d => d.Ready)) DrawConnectedBadge();
                     GUILayout.FlexibleSpace();
-                    GUILayout.Label(device.Transport + " | " + (device.Ready ? "Ready" : device.State), EditorStyles.miniLabel);
                 }
+                EditorGUILayout.LabelField(device.Transport + " | " + (device.Ready ? "Ready" : device.State), EditorStyles.miniLabel);
                 if (choices.Length > 1)
                 {
                     int current = Array.IndexOf(choices, device);
@@ -526,6 +592,10 @@ namespace OutBuild
                     EditorGUILayout.LabelField(record.utc + "   v" + record.version + " (" + record.code + ")   " + record.seconds.ToString("F1") + "s   " + (record.bytes / 1048576d).ToString("F1") + " MB", EditorStyles.miniLabel);
                     EditorGUILayout.LabelField(record.path, EditorStyles.wordWrappedMiniLabel);
                     EditorGUILayout.LabelField("Deployment: " + record.deployment, EditorStyles.wordWrappedMiniLabel);
+                    foreach (string copied in record.copiedLocations ?? new List<string>())
+                        EditorGUILayout.LabelField("Copied: " + copied, EditorStyles.wordWrappedMiniLabel);
+                    foreach (string error in record.copyErrors ?? new List<string>())
+                        EditorGUILayout.HelpBox("Copy failed: " + error, MessageType.Warning);
                     using (new EditorGUILayout.HorizontalScope())
                     {
                         using (new EditorGUI.DisabledScope(!File.Exists(record.path) && !Directory.Exists(record.path)))

@@ -50,6 +50,8 @@ namespace OutBuild
         public double seconds;
         public long bytes;
         public WebBuildSettings web;
+        public List<string> copiedLocations = new List<string>();
+        public List<string> copyErrors = new List<string>();
         public bool IsApk { get { return result == "Succeeded" && string.Equals(Path.GetExtension(path), ".apk", StringComparison.OrdinalIgnoreCase); } }
     }
 
@@ -135,6 +137,117 @@ namespace OutBuild
             if (preset.overrideMachineOutput) return OutputRoot(preset.outputFolder);
             shared = shared ?? MachineStore.Read();
             return OutputRoot(string.IsNullOrWhiteSpace(shared.outputFolder) ? preset.outputFolder : shared.outputFolder);
+        }
+
+        public static string[] CopyOutputRoots(string primary, IEnumerable<string> folders)
+        {
+            primary = NormalizeOutputRoot(primary);
+            var roots = new List<string>();
+            foreach (string folder in folders ?? Enumerable.Empty<string>())
+            {
+                if (string.IsNullOrWhiteSpace(folder) || !Path.IsPathRooted(folder))
+                    throw new ArgumentException("Copy locations must be absolute paths.");
+                string path = NormalizeOutputRoot(folder);
+                if (string.Equals(primary, path, StringComparison.OrdinalIgnoreCase) || roots.Contains(path, StringComparer.OrdinalIgnoreCase)) continue;
+                foreach (string other in roots.Concat(new[] { primary }))
+                    if (path.StartsWith(other.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
+                        other.StartsWith(path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                        throw new ArgumentException("Build and copy locations must not be nested inside one another.");
+                roots.Add(path);
+            }
+            return roots.ToArray();
+        }
+
+        private static string NormalizeOutputRoot(string path)
+        {
+            path = OutputRoot(path);
+            return path.Length == Path.GetPathRoot(path).Length ? path : path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        }
+
+        // Copy only the main artifact. Automator manifests and companion files stay at primary.
+        // Prepare everything before replacing older files; restore them if publication fails.
+        public static void CopyPublishedBuild(string artifact, string destination)
+        {
+            string primary = Path.GetDirectoryName(artifact);
+            Directory.CreateDirectory(FilePath(destination));
+            using (var outputLock = LockOutputDirectory(destination))
+            {
+                string work = Path.Combine(destination, ".buildautomator-copy-" + Guid.NewGuid().ToString("N"));
+                string stage = Path.Combine(work, "new"), backup = Path.Combine(work, "previous");
+                var published = new List<string>();
+                var replaced = new List<string>();
+                bool cleanup = true;
+                try
+                {
+                    Directory.CreateDirectory(FilePath(stage));
+                    Directory.CreateDirectory(FilePath(backup));
+                    string[] entries = { Path.GetFileName(artifact) };
+                    foreach (string name in entries)
+                    {
+                        if (name != Path.GetFileName(name) || name == "." || name == ".." || string.IsNullOrEmpty(name))
+                            throw new IOException("Invalid build artifact name.");
+                        CopyEntry(Path.Combine(primary, name), Path.Combine(stage, name));
+                    }
+                    foreach (string name in entries)
+                    {
+                        string target = Path.Combine(destination, name);
+                        if (File.Exists(FilePath(target)) || Directory.Exists(FilePath(target)))
+                        {
+                            MoveEntry(target, Path.Combine(backup, name));
+                            replaced.Add(name);
+                        }
+                        MoveEntry(Path.Combine(stage, name), target);
+                        published.Add(name);
+                    }
+                }
+                catch
+                {
+                    // Keep backups for manual recovery if the destination disconnects during rollback.
+                    cleanup = false;
+                    foreach (string name in published.AsEnumerable().Reverse()) MoveEntry(Path.Combine(destination, name), Path.Combine(stage, name));
+                    foreach (string name in replaced.AsEnumerable().Reverse()) MoveEntry(Path.Combine(backup, name), Path.Combine(destination, name));
+                    cleanup = true;
+                    throw;
+                }
+                finally
+                {
+                    if (cleanup && Directory.Exists(FilePath(work)))
+                    {
+                        try { Directory.Delete(FilePath(work), true); }
+                        catch (IOException) { }
+                        catch (UnauthorizedAccessException) { }
+                    }
+                }
+            }
+        }
+        public static FileStream LockOutputDirectory(string output)
+        {
+            // Keep coordination files outside build/copy destinations.
+            string key = NormalizeOutputRoot(output);
+            if (Application.platform == RuntimePlatform.WindowsEditor) key = key.ToUpperInvariant();
+            string hash;
+            using (var sha = SHA256.Create())
+                hash = BitConverter.ToString(sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(key))).Replace("-", "");
+            string locks = Path.Combine(Path.GetTempPath(), "OutBuildAutomator-locks");
+            Directory.CreateDirectory(locks);
+            return new FileStream(Path.Combine(locks, hash + ".lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        }
+        private static void CopyEntry(string source, string target)
+        {
+            source = FilePath(source); target = FilePath(target);
+            if (!Directory.Exists(source)) { File.Copy(source, target); return; }
+            Directory.CreateDirectory(target);
+            foreach (string entry in Directory.GetFileSystemEntries(source))
+            {
+                if ((File.GetAttributes(entry) & FileAttributes.ReparsePoint) != 0) throw new IOException("Build copies cannot follow symbolic links: " + entry);
+                CopyEntry(entry, Path.Combine(target, Path.GetFileName(entry)));
+            }
+        }
+        private static void MoveEntry(string source, string target)
+        {
+            source = FilePath(source); target = FilePath(target);
+            if (Directory.Exists(source)) Directory.Move(source, target);
+            else File.Move(source, target);
         }
 
         public static T Read<T>(string path) where T : new()

@@ -15,6 +15,7 @@ namespace OutBuild
     {
         public int schemaVersion = 1;
         public string outputFolder = "", adbOverride = "";
+        public List<string> additionalOutputFolders = new List<string>();
         public bool autoRefresh = true, revealBuild = true;
         public int refreshSeconds = 3;
         public List<SavedDevice> devices = new List<SavedDevice>();
@@ -54,6 +55,7 @@ namespace OutBuild
             state.devices = (state.devices ?? new List<SavedDevice>()).Where(d => d != null).ToList();
             state.migratedProjects = state.migratedProjects ?? new List<string>();
             state.forgottenDevices = state.forgottenDevices ?? new List<string>();
+            state.additionalOutputFolders = state.additionalOutputFolders ?? new List<string>();
             foreach (var device in state.devices) Normalize(device);
             return state;
         }
@@ -94,6 +96,26 @@ namespace OutBuild
         }
 
         public MachineSettings SetAdbOverride(string path) { return Change(s => s.adbOverride = path ?? ""); }
+        public MachineSettings AddOutputFolder(string folder)
+        {
+            string path = ValidateCopyFolder(folder);
+            return Change(s => { if (!s.additionalOutputFolders.Contains(path, StringComparer.OrdinalIgnoreCase)) s.additionalOutputFolders.Add(path); });
+        }
+        public MachineSettings ReplaceOutputFolder(string previous, string folder)
+        {
+            string path = ValidateCopyFolder(folder);
+            return Change(s => {
+                int index = s.additionalOutputFolders.IndexOf(previous);
+                if (index >= 0) s.additionalOutputFolders[index] = path;
+            });
+        }
+        public MachineSettings RemoveOutputFolder(string folder) { return Change(s => s.additionalOutputFolders.Remove(folder)); }
+        private static string ValidateCopyFolder(string folder)
+        {
+            if (string.IsNullOrWhiteSpace(folder) || !Path.IsPathRooted(folder))
+                throw new ArgumentException("Copy locations must be absolute paths. Use Browse to choose a folder.");
+            return BuildStorage.OutputRoot(folder);
+        }
         public MachineSettings SetAutoRefresh(bool enabled) { return Change(s => s.autoRefresh = enabled); }
         public MachineSettings SetRevealBuild(bool enabled) { return Change(s => s.revealBuild = enabled); }
 

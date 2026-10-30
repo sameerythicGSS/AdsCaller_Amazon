@@ -33,7 +33,7 @@ namespace OutBuild
         {
             Directory.CreateDirectory(output);
             if (outputLock != null) return;
-            try { outputLock = new FileStream(Path.Combine(output, ".buildautomator-build.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
+            try { outputLock = BuildStorage.LockOutputDirectory(output); }
             catch (IOException e) { throw new IOException("Another Editor is using this build folder. Wait for that build to finish.", e); }
         }
         private static string JournalPath { get { return Path.Combine(BuildStorage.Root, "UserSettings", "OutBuildAutomator-build.json"); } }

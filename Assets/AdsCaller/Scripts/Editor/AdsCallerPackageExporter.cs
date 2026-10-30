@@ -600,7 +600,7 @@ public sealed class AdsCallerPackageExporter : EditorWindow
         if (main && cross && AssetExists("Assets/AdsCaller/Bootstrap/Combined")) mainAssets = mainAssets.Concat(new[] { "Assets/AdsCaller/Bootstrap/Combined" });
         AdsCallerUpmExport.Export(output, main ? (AndroidModule != null ? "android" : "amazon") : null, cross,
             includeNetworkSdk, CoreAssets, mainAssets, CrossPromoAssets, NetworkSdkAssets, projectAssets,
-            exportFormat == ExportFormat.Tarballs, includeCatalogData);
+            exportFormat == ExportFormat.Tarballs, includeCatalogData, packageVersion);
     }
 
     public static void ExportTarballsForValidation(string composition, string output, bool samples, bool sdks)
@@ -672,6 +672,8 @@ public sealed class AdsCallerPackageExporter : EditorWindow
         AdsCallerAssets.Refresh();
         RefreshPreflight();
         var issues = exportIssues[composition];
+        try { AdsCallerUpmExport.NormalizeVersion(packageVersion); }
+        catch (ArgumentException exception) { issues = issues.Concat(new[] { exception.Message }).ToArray(); }
         if (issues.Length != 0)
         {
             if (showDialog)
@@ -795,6 +797,8 @@ public sealed class AdsCallerPackageExporter : EditorWindow
     private string GetPackageFileName(PackageComposition composition)
     {
         string safeVersion = SanitizeFilePart(packageVersion);
+        try { safeVersion = AdsCallerUpmExport.NormalizeVersion(packageVersion); }
+        catch (ArgumentException) { } // Allow editing; export preflight reports invalid input.
         string configuredName = GetPackageName(composition);
         if (string.IsNullOrWhiteSpace(configuredName)) configuredName = GetDefaultPackageName(composition);
         string packageName = SanitizeFilePart(configuredName);

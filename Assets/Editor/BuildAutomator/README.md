@@ -3,6 +3,13 @@
 An Editor-only build and device dashboard for Unity 2022.3 and Unity 6. No AdsCaller,
 network SDK, reporting package, account, or runtime component is required.
 
+The Dashboard and Full Controls use a spaced, card-based layout inspired by WebGL
+Studio. A bright green **Connected** badge beside a device name means at least one
+of its live USB/Wi-Fi transports is authorized and ready in ADB. Saved, offline,
+unauthorized and discovery-only entries do not receive the badge. The checkbox
+still controls deployment selection; a connection alone does not select a device.
+The transport status below the name describes the currently chosen connection.
+
 ## WebGL Studio (2.5)
 
 Version 2.5.1 preserves Unity's default Editor styles and fonts during redraws and keeps
@@ -135,6 +142,22 @@ then the shared folder, then the preset's project folder if no shared location h
 The per-preset override is under Advanced and defaults off. Clearing the shared field restores
 project fallbacks. A missing/disconnected shared drive causes a build error; the tool does not
 silently redirect the build somewhere else. A build snapshots its output before starting.
+
+Use **Add copy destination...** below the primary build location to choose any number of
+additional absolute folders. Edit, browse, or remove each destination in the list. These
+destinations are shared across projects and are snapshotted when you start a build.
+The tool builds once at the effective output, then copies only the main artifact (for example,
+the APK or AAB) to each destination using the same filename. Manifests, automator helper files,
+and sibling files stay at the primary location. For a folder-based artifact such as WebGL,
+the main artifact folder is copied recursively. A desktop executable copied alone may still
+need its Unity companion files to run.
+
+Copies replace matching artifacts after preparing the new copy, leaving unrelated files alone.
+Duplicate destinations and the primary location are skipped; nested locations are rejected.
+A failed build creates no copies. If one copy fails, the primary build remains successful and
+other destinations are still attempted. Copy successes and errors appear in build history and
+the primary manifest; copy destinations receive no automator manifest. Command-line builds
+also use the shared copy destinations.
 
 Saved devices, connection aliases, nicknames, the optional ADB executable override, automatic
 refresh, and reveal-on-success preferences are shared too. **Save device for all projects**

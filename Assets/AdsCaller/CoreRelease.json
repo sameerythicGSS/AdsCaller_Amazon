@@ -11,7 +11,7 @@
     },
     {
       "path": "Assets/AdsCaller/AdsCaller-UPM-Guide.md",
-      "sha256": "8f7ed5b49763c1ffb2732d320688c42be900ef492f6155568e8d5697336785f0"
+      "sha256": "d741ef9257cc361a2bde4820d9dd4c1f642c6304867a46f0a8c8a5e801482fcc"
     },
     {
       "path": "Assets/AdsCaller/AdsCaller-UPM-Guide.md.meta",
@@ -175,7 +175,7 @@
     },
     {
       "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerPackageExporter.cs",
-      "sha256": "c565b500f0b1d300be747ba4d9dbe2d22d7ebb6e42c32939625bac75b0444fce"
+      "sha256": "6cf7ea6b59cc14d65d6adadf19a830ac04b34cd0d3979bac74fb784368d2ab7b"
     },
     {
       "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerPackageExporter.cs.meta",
@@ -227,7 +227,7 @@
     },
     {
       "path": "Assets/AdsCaller/Scripts/Editor/Distribution/AdsCallerUpmExport.cs",
-      "sha256": "03d8541daa557e53d217e4339b3f76f50ececac35b4665cdf0a9ec70de75fe17"
+      "sha256": "45088ee82a86e59f37dbe40d71eefe53d21874eecee7d50794fc9fa9defe3522"
     },
     {
       "path": "Assets/AdsCaller/Scripts/Editor/Distribution/AdsCallerUpmExport.cs.meta",
@@ -291,7 +291,7 @@
     },
     {
       "path": "Assets/Editor/BuildAutomator/BuildController.cs",
-      "sha256": "bed04c13940eb7cdeb9909dddea06457965e7562b8a52f3a31d30d4f6e03807f"
+      "sha256": "c06bad334da50b0a7a346cc2fe5b2804de7fdc66ec006af1aa0be9089beaf6cd"
     },
     {
       "path": "Assets/Editor/BuildAutomator/BuildController.cs.meta",
@@ -299,7 +299,7 @@
     },
     {
       "path": "Assets/Editor/BuildAutomator/BuildDashboard.cs",
-      "sha256": "310df9d7e37d4e5c84a4ff039cc2ede21fce57a2c49a3e36a41cdfe66ccfa96c"
+      "sha256": "39e14fcbd4fa54a8461dfc3993419ef89fe19b6bc874b3a0ba4f4904cf906223"
     },
     {
       "path": "Assets/Editor/BuildAutomator/BuildDashboard.cs.meta",
@@ -307,7 +307,7 @@
     },
     {
       "path": "Assets/Editor/BuildAutomator/BuildJobs.cs",
-      "sha256": "19a3ca72c58243efe7054efadb5bc9b68089286ed57004ce4234ae6dceb0c85d"
+      "sha256": "90f2466c271a7f2dc084ba64bec91b6b7a668aa65e04489bc54cce3124994476"
     },
     {
       "path": "Assets/Editor/BuildAutomator/BuildJobs.cs.meta",
@@ -315,7 +315,7 @@
     },
     {
       "path": "Assets/Editor/BuildAutomator/BuildRecovery.cs",
-      "sha256": "2cc85f3142c1d616f264fb2a63b86c303ceae56e48b2c4b889776eefc3b845bb"
+      "sha256": "aaae20e20d27298decb6859dd3a56509f00927308636e90b8ee34cd130202eea"
     },
     {
       "path": "Assets/Editor/BuildAutomator/BuildRecovery.cs.meta",
@@ -323,7 +323,7 @@
     },
     {
       "path": "Assets/Editor/BuildAutomator/BuildSettings.cs",
-      "sha256": "7a736bd6f947290a45584ba4dce5413b32389d152288a67ccd3c99971fdc048b"
+      "sha256": "c897b678383d2e7525aafd7748547f69b489866dae324ed627ab747a9a09201c"
     },
     {
       "path": "Assets/Editor/BuildAutomator/BuildSettings.cs.meta",
@@ -331,7 +331,7 @@
     },
     {
       "path": "Assets/Editor/BuildAutomator/MachineSettings.cs",
-      "sha256": "159dbe80280bd86c89a0e78874707742059b740b19c16ac7e026b0c05dc145e8"
+      "sha256": "fceae8ce733318a03048ec583a16d790b3c13a02717f2b8bf54fc02341433e7d"
     },
     {
       "path": "Assets/Editor/BuildAutomator/MachineSettings.cs.meta",
@@ -355,7 +355,7 @@
     },
     {
       "path": "Assets/Editor/BuildAutomator/README.md",
-      "sha256": "f1f782cc4c411b1cbaf584e742d04a177c4f7683562c3ab7251f1890ea124de2"
+      "sha256": "d2c2211c03fb0587caacf9dae44c17c06c32a64541eed0cbd50de49b47177106"
     },
     {
       "path": "Assets/Editor/BuildAutomator/README.md.meta",
@@ -371,7 +371,7 @@
     },
     {
       "path": "Assets/Editor/BuildAutomator/WebGLStudio.cs",
-      "sha256": "8ca269f59d93fbe11ca5961c0b7dc2a38e593afe2942f38abf30f623df8a6af7"
+      "sha256": "1f5f9d19c85866a798f299cc481fa92de4e7f24e6734dffcd7190ff6197dd1e8"
     },
     {
       "path": "Assets/Editor/BuildAutomator/WebGLStudio.cs.meta",

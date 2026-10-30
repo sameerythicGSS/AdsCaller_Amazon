@@ -14,7 +14,15 @@ using CompressionLevel = System.IO.Compression.CompressionLevel;
 public static class AdsCallerUpmExport
 {
     public const string Prefix = "com.adscaller.family.";
-    public const string Version = "5.1.0";
+    // UPM requires three numeric components; retain the exporter's release number.
+    public static string NormalizeVersion(string version)
+    {
+        version = (version ?? string.Empty).Trim();
+        if (Regex.IsMatch(version, @"^(0|[1-9]\d*)\.(0|[1-9]\d*)$")) version += ".0";
+        if (!Regex.IsMatch(version, @"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$"))
+            throw new ArgumentException("Enter a package version such as 2.5, 2.5.0 or 2.5.0-beta.1.", nameof(version));
+        return version;
+    }
     [Serializable] public sealed class Delivery { public int schema = 1; public string unity; public string online; public string[] packages; public Entry[] assets; }
     [Serializable] public sealed class Entry { public string path, guid, package, originalGuidBase64; public bool configuration; }
     [Serializable] private sealed class Index { public Entry[] assets; }
@@ -71,8 +79,9 @@ public static class AdsCallerUpmExport
 
     public static void Export(string output, string online, bool cross, bool sdks, IEnumerable<string> coreRoots,
         IEnumerable<string> onlineRoots, IEnumerable<string> crossRoots, IEnumerable<string> sdkRoots, IEnumerable<string> projectRoots,
-        bool tarballs = false, bool includeCatalogData = true)
+        bool tarballs = false, bool includeCatalogData = true, string packageVersion = null)
     {
+        string version = NormalizeVersion(packageVersion);
         var data = new SortedDictionary<string, byte[]>(StringComparer.Ordinal);
         var entries = new List<Entry>();
         bool stripCatalogData = cross && !includeCatalogData;
@@ -137,7 +146,7 @@ public static class AdsCallerUpmExport
             var deps = new Dictionary<string, string>();
             bool old = !Application.unityVersion.StartsWith("6000.", StringComparison.Ordinal);
             if (module.Key == "core") deps.Add("com.unity.ugui", "1.0.0");
-            if (module.Key.StartsWith("main.") || module.Key == "cross-promo") deps.Add(Prefix + "core", Version);
+            if (module.Key.StartsWith("main.") || module.Key == "cross-promo") deps.Add(Prefix + "core", version);
             // SDK snapshots are optional distribution files, not provider dependencies.
             // Official Assets/UPM imports expose the same assemblies without our package IDs.
             // SDK snapshots also accept an existing official EDM installation. UPM
@@ -148,8 +157,7 @@ public static class AdsCallerUpmExport
                 deps.Add("com.unity.nuget.newtonsoft-json", "3.2.2");
             }
             string display = module.Key == "core" ? "Core" : module.Key == "cross-promo" ? "Cross Promo" : module.Key.Replace("main.", "").Replace("sdk.", "SDK ");
-            string moduleVersion = module.Key == "cross-promo" && !old ? "5.1.1" : Version;
-            string manifest = "{\n  \"name\": " + Json(name) + ",\n  \"version\": " + Json(moduleVersion) + ",\n  \"displayName\": " + Json("Ads Caller — " + System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase(display))
+            string manifest = "{\n  \"name\": " + Json(name) + ",\n  \"version\": " + Json(version) + ",\n  \"displayName\": " + Json("Ads Caller — " + System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase(display))
                 + ",\n  \"unity\": " + Json(module.Key == "cross-promo" && !old ? "6000.0" : "2022.3") + ",\n  \"description\": \"Ads Caller package family. Use Ads Caller > Setup Wizard after installation.\",\n  \"author\": { \"name\": \"Sameer Khan\" },\n  \"dependencies\": {"
                 + string.Join(",", deps.Select(d => "\n    " + Json(d.Key) + ": " + Json(d.Value))) + "\n  }\n}\n";
             string folder = "packages/" + name + "/";
@@ -290,7 +298,7 @@ public static class AdsCallerUpmExport
             instructions.Append("Package Manager can install these modules while game scripts contain compilation errors, including in Safe Mode. Setup Wizard, scene editing and Play Mode require compilation to succeed.\n\n");
             if (projectFiles.Length != 0)
                 instructions.Append("After compilation succeeds, optionally import ProjectAssets.unitypackage for the exported demos and SDK/Addressables settings. Review the import list and preserve existing project settings. It contains assets directly, with no C# installation bootstrap.\n\n");
-            instructions.Append("Then open Ads Caller > Setup Wizard. Review application identifiers and rebuild Addressables content for the destination application.\n\nDo not install beside legacy Ads Caller scripts or another copy of the same SDK. Use the migration installer for legacy projects; these tarballs do not migrate or archive Assets. Install only one Main provider (Android or Amazon).\n\nThe export folder name is a distribution label. Each package.json retains its own module version and identity.\n");
+            instructions.Append("Then open Ads Caller > Setup Wizard. Review application identifiers and rebuild Addressables content for the destination application.\n\nDo not install beside legacy Ads Caller scripts or another copy of the same SDK. Use the migration installer for legacy projects; these tarballs do not migrate or archive Assets. Install only one Main provider (Android or Amazon).\n\nAll module versions and private dependencies use the version entered in Package Exporter (2.5 becomes UPM version 2.5.0).\n");
             File.WriteAllText(Path.Combine(staging, "README.md"), instructions.ToString(), Utf8);
             if (Directory.Exists(output))
             {
