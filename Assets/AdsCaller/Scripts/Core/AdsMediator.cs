@@ -6,6 +6,8 @@ using UnityEngine.UI;
 public class AdsMediator : MonoBehaviour
 {
     private static AdsMediator _instance;
+    /// <summary>Read the live mediator without creating the fallback ghost.</summary>
+    public static bool TryGetInstance(out AdsMediator mediator) { mediator = _instance; return mediator != null; }
     public static AdsMediator Instance
     {
         get

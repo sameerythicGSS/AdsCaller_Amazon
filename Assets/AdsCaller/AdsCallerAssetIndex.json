@@ -471,6 +471,22 @@
     {
       "path": "Assets/AdsCaller/Scripts/Editor/ProviderManager/AdsCallerProviderWindow.cs",
       "guid": "a154cda5afd750dda6bcd92140edcc39"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Core/AdsPanelBehaviour.cs",
+      "guid": "07c04e1115745dc696acc62d66fa02a9"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Core/AdsButtonAction.cs",
+      "guid": "134fa72458d853208bbf9ed829f1714c"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerHierarchyMenu.cs",
+      "guid": "68b1c0dd95035f3d9597d3ee4f8416e8"
+    },
+    {
+      "path": "Assets/AdsCaller/Hierarchy-Menu.md",
+      "guid": "082e1cd07f13596e9799ccc32311972c"
     }
   ]
 }

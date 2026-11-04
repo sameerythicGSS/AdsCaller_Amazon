@@ -1,7 +1,10 @@
 {
   "name": "AdsCaller.Editor",
   "rootNamespace": "AdsCaller",
-  "references": [],
+  "references": [
+    "AdsCaller.Core",
+    "UnityEngine.UI"
+  ],
   "autoReferenced": true,
   "includePlatforms": [
     "Editor"

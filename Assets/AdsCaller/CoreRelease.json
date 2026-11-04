@@ -11,7 +11,7 @@
     },
     {
       "path": "Assets/AdsCaller/AdsCaller-UPM-Guide.md",
-      "sha256": "d741ef9257cc361a2bde4820d9dd4c1f642c6304867a46f0a8c8a5e801482fcc"
+      "sha256": "3677a25b69861690668f5ab0093d7190d2276cd66b0e7a23a98421a84897168b"
     },
     {
       "path": "Assets/AdsCaller/AdsCaller-UPM-Guide.md.meta",
@@ -56,6 +56,14 @@
     {
       "path": "Assets/AdsCaller/Editor/ProjectReporter/SamProjectReporter.cs.meta",
       "sha256": "d66b4c0f7b8013b6f4128742b91d47004fac231f18559989bc2c983d9cd90f91"
+    },
+    {
+      "path": "Assets/AdsCaller/Hierarchy-Menu.md",
+      "sha256": "8287c5a330e163660f9eaca0221a4b817b66a3a56c8500b124e53f693cf47ef9"
+    },
+    {
+      "path": "Assets/AdsCaller/Hierarchy-Menu.md.meta",
+      "sha256": "ba7c2ad79012057788525353ac4e44c06123e3d9211a0e5d7d99a18796b4ac3e"
     },
     {
       "path": "Assets/AdsCaller/Package-Composition.md",
@@ -110,12 +118,28 @@
       "sha256": "db3b728f42576b5119dfd906174a913678b00bc6004af5e5cf0bfb4ac1645558"
     },
     {
+      "path": "Assets/AdsCaller/Scripts/Core/AdsButtonAction.cs",
+      "sha256": "c43c1e8ea96e92406632d2fe76ea2cf2c5e771c91357e302d311c0cdfaa5b470"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Core/AdsButtonAction.cs.meta",
+      "sha256": "0230d1e48a1fb998bc763105b663d81dd54695584e01ab7214df16cd8641a2b3"
+    },
+    {
       "path": "Assets/AdsCaller/Scripts/Core/AdsMediator.cs",
-      "sha256": "a8436982c82143adce2d3c4d601115eeb29221a2668f586738a79cb42c3e1a84"
+      "sha256": "fa4c1cfce1950d60ce7ab800ad10f34ef4010fcc4217f3d9c57467c4b109c480"
     },
     {
       "path": "Assets/AdsCaller/Scripts/Core/AdsMediator.cs.meta",
       "sha256": "9ed2b1412c71805ba08404bc037bf8c07ffacab6a9188b0d6a2a376b41a93cf8"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Core/AdsPanelBehaviour.cs",
+      "sha256": "96f4083cb6683d313350b92534a46aa0e052111f86e87c170c45287852aa0d02"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Core/AdsPanelBehaviour.cs.meta",
+      "sha256": "8e8b72da69dc23e1ab89d0760ffc5e8614e7e743bbc376a589145a4dc6334a53"
     },
     {
       "path": "Assets/AdsCaller/Scripts/Core/AdsProviderRegistry.cs",
@@ -143,7 +167,7 @@
     },
     {
       "path": "Assets/AdsCaller/Scripts/Editor/AdsCaller.Editor.asmdef",
-      "sha256": "0404c11046250757f4d627e77acefa15e96561cdb3b581468b9c0a998ea0a7d0"
+      "sha256": "1d08b4c645d6f34407ff3562539e8b558107b4b4e48d4ea1a45e6bd124fa50bd"
     },
     {
       "path": "Assets/AdsCaller/Scripts/Editor/AdsCaller.Editor.asmdef.meta",
@@ -166,6 +190,14 @@
       "sha256": "e256a003ce7b8fbef31ed7a44666d5b191aeea92beed14cae890190c4129eef8"
     },
     {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerHierarchyMenu.cs",
+      "sha256": "ffe9265024a8b2e1dadcd0f9d241a66f10c747d12c5d09e9b1ff03125420f3ea"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerHierarchyMenu.cs.meta",
+      "sha256": "95f91dee5acd21076a49b491640f60c42fe8d83cef1645b9c6c3e058c6ee0986"
+    },
+    {
       "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerImportGuard.cs",
       "sha256": "3322100dd03d222bda3f7ab4a90988d7b05dcd05d3cb87a4705bc37f8c7384d1"
     },
@@ -175,11 +207,27 @@
     },
     {
       "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerPackageExporter.cs",
-      "sha256": "6cf7ea6b59cc14d65d6adadf19a830ac04b34cd0d3979bac74fb784368d2ab7b"
+      "sha256": "7a3d8daa9d7565efbea1128bb85790c004f551100dc482e5c2d83335160b6479"
     },
     {
       "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerPackageExporter.cs.meta",
       "sha256": "a683f36300825cfdbdeb1fa60ec1ecfc646df44b6017c3b58a6c9009f22b9e66"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerSdkBootstrap.cs",
+      "sha256": "215598886a86b1b39c38131ce8c0ed0471e22809535cbab6b813b7fff0f398dc"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerSdkBootstrap.cs.meta",
+      "sha256": "8d029252ad18eb5a7c17698ef97bb708155c807d3463e66be1f8998260c46152"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerSdkStatus.cs",
+      "sha256": "f47fb5f03ffc1c3bf6b99c39a08d5b1218ddd66bfba6f03a6863841e8d8218fb"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerSdkStatus.cs.meta",
+      "sha256": "8c016beeef76d6f79c3472db8ff29d5440fa7d440ec96d6dfb7fd9d891fb6c30"
     },
     {
       "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerSetup.cs",
@@ -188,6 +236,14 @@
     {
       "path": "Assets/AdsCaller/Scripts/Editor/AdsCallerSetup.cs.meta",
       "sha256": "d2244e236432876f60be7925c0268961cff32430a77e1098e990429d8e583248"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsMediatorEditor.cs",
+      "sha256": "b761b8db06a5c22c01fcd3390ed3a15d705b5cd33d593fc90abf31fdf88d1154"
+    },
+    {
+      "path": "Assets/AdsCaller/Scripts/Editor/AdsMediatorEditor.cs.meta",
+      "sha256": "c8c00d8f0bace2ae48383e0476cf2c29b2f8eb3b1b0e06ff29a965b6489a7db7"
     },
     {
       "path": "Assets/AdsCaller/Scripts/Editor/AdsMigration.meta",

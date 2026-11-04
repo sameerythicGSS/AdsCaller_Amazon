@@ -134,8 +134,20 @@ Re-export old distributions to get the 5.1 manifests. Existing 5.0 archives rema
 
 Android compiles with or without the official Firebase SDK. The analytics adapter discovers Firebase App and Analytics types at runtime; no scripting define or Firebase DLL reference is needed. Without those types, enabling Firebase in the config has no effect. Reinstall the official Firebase Analytics Unity SDK to restore analytics. Firebase TaskExtension and Remote Config are not required by the adapter. The linker preserves the optional SDK entry points for player builds.
 
-The unused legacy FirebaseManager source is retained under Legacy/ArchivedFirebase~, which Unity does not compile. Legacy AdsManager revenue now uses the shared analytics bus.
+The unused legacy FirebaseManager source is retained under Legacy/ArchivedFirebase~, which Unity does not compile. The unused legacy AdsManager is archived beside it; current revenue reporting uses the shared analytics bus.
 
-In the Android source repository, Firebase vendor files are ignored and retained locally, while the small Ads Caller integration remains tracked. Fresh clones compile without Firebase. On first successful import without Firebase, the Android editor integration clears obsolete Firebase Gradle entries and replaces the Firebase Messaging activity/service with the standard Unity activity. Installing Messaging again requires its usual vendor manifest setup. EDM4U, MAX and Google Mobile Ads remain required.
+In the Android source repository, Firebase vendor files are ignored and retained locally, while the small Ads Caller integration remains tracked. Fresh clones compile without Firebase. On first successful import without Firebase, the Android editor integration clears obsolete Firebase Gradle entries and replaces the Firebase Messaging activity/service with the standard Unity activity. Installing Messaging again requires its usual vendor manifest setup. The selected Online formats still require their network SDKs for ad delivery; the source checkout itself compiles without them.
 
 Existing commits still contain the previous Firebase/LFS objects. Removing files from the current Git index does not erase history or shrink an initial push containing those commits. History cleanup or a new clean repository is a separate operation.
+
+## Optional third-party installations and missing SDK labels
+
+The Android repository also excludes local MAX, Google Mobile Ads/UMP, AppsFlyer, External Dependency Manager and DOTween installations, along with their vendor native plugins. TextMesh Pro examples are excluded; essential fonts, shaders and project UI assets remain tracked. All excluded files are retained locally. Fresh checkouts compile without vendor ad SDKs; install official compatible SDKs separately for device ad delivery.
+
+AdsCaller component, AdsCallerConfig ScriptableObject and AdsMediator inspectors display SDK status. Online routing shows **Absent — required** for a missing network SDK selected by an enabled format (including configured interstitial/rewarded fallbacks), and for UMP when automatic consent is enabled. Missing enabled Firebase/AppsFlyer analytics shows **Absent — optional**. Disabled formats and explicit test bypass do not require network SDKs. Missing UMP never grants consent; an externally managed consent flow must explicitly call SetConsentReady.
+
+MAX and AdMob implementations compile in isolated player assemblies. The Editor always compiles the provider, its configuration and diagnostics without those adapters, allowing SDK removal to recover even with old saved symbols. Native ad requests run in player builds; use the existing explicit test bypass for an Editor preview. Ads Caller maintains its adapter symbols from installed SDK assets, including supported UPM paths. Build validation reports missing required SDKs before building scenes that reference the configuration. AppsFlyer revenue uses a reflection bridge without a saved define or SDK assembly reference.
+
+Banner configuration now uses the SDK-independent AdsBannerPosition enum. Its integer values match Google's AdPosition, preserving saved assets. Calls to ShowBanner/ShowLargeBanner with Google's enum remain supported; code assigning configuration fields directly should use AdsBannerPosition.
+
+Run `python Tools/validate_optional_sdks.py` for disposable SDK-free, installed and removed-SDK Editor checks plus Android player-script compilation. These checks do not request live ads or perform a full Android player build.
