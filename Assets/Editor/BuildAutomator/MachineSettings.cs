@@ -156,9 +156,30 @@ namespace OutBuild
                 {
                     string address = NormalizeTransport(device.Id);
                     if (string.IsNullOrEmpty(address)) continue;
+                    // ADB may retain offline TCP transports after their address was retired.
+                    // Do not recreate those as unidentified saved devices on the next refresh.
+                    if (device.Transport == "Wi-Fi" && device.State == "offline" && Find(state, address) == null) continue;
                     Merge(state, address, device.HardwareId, device.Name, DateTime.UtcNow.ToString("yyyy-MM-dd"));
                 }
+                foreach (var group in observations.Where(d => d.Ready && d.Transport == "Wi-Fi" &&
+                    ValidHardwareId(d.HardwareId).Length > 0).GroupBy(d => ValidHardwareId(d.HardwareId)))
+                {
+                    var saved = state.devices.FirstOrDefault(d => d.hardwareId == group.Key);
+                    if (saved == null) continue;
+                    // Only a verified wireless replacement retires old endpoints. Keep USB,
+                    // stable service identities and every still-live transport intact.
+                    var active = observations.Where(d => d.State != "offline")
+                        .Select(d => NormalizeTransport(d.Id)).ToArray();
+                    saved.aliases.RemoveAll(alias => IsEndpoint(alias) && !active.Contains(alias));
+                    saved.id = NormalizeTransport(group.Last().Id);
+                }
             });
+        }
+
+        private static bool IsEndpoint(string value)
+        {
+            string endpoint;
+            return Adb.TryEndpoint(value, out endpoint, 0);
         }
 
         public MachineSettings AddEndpoint(string endpoint)
@@ -226,7 +247,7 @@ namespace OutBuild
             const string suffix = "._adb-tls-connect._tcp";
             if (value.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
                 value = value.Substring(0, value.Length - suffix.Length);
-            return Regex.IsMatch(value, @"^[a-zA-Z0-9][a-zA-Z0-9_.@+-]{0,254}$") ? value.ToLowerInvariant() : "";
+            return Regex.IsMatch(value, @"^[a-zA-Z0-9][a-zA-Z0-9_.@+() -]{0,254}$") ? value.ToLowerInvariant() : "";
         }
 
         private static bool MdnsContainsHardwareIdentity(string instance, string hardwareId)
@@ -254,6 +275,17 @@ namespace OutBuild
                 string address = NormalizeTransport(transport);
                 var previous = local.selectionIdentities.FirstOrDefault(s => NormalizeTransport(s.transport) == address);
                 var current = Find(state, address);
+                if (current == null && previous != null && !string.IsNullOrEmpty(previous.hardwareId))
+                {
+                    var replacement = state.devices.FirstOrDefault(d => d.hardwareId == previous.hardwareId);
+                    if (replacement != null && !string.IsNullOrEmpty(replacement.id))
+                    {
+                        local.selectedDevices[local.selectedDevices.IndexOf(transport)] = replacement.id;
+                        previous.transport = replacement.id;
+                        changed = true;
+                        continue;
+                    }
+                }
                 if (previous != null && !string.IsNullOrEmpty(previous.hardwareId) &&
                     (current == null || (!string.IsNullOrEmpty(current.hardwareId) && previous.hardwareId != current.hardwareId)))
                 {

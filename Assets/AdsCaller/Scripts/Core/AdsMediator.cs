@@ -40,6 +40,11 @@ public class AdsMediator : MonoBehaviour
     public AdsProviderKind rewardedProvider = AdsProviderKind.Online;
     public bool allowProviderFallback = true;
 
+    [Header("App Open")]
+    [Tooltip("Pause AppOpen requests, including automatic launch/resume and direct Cross Promo calls.")]
+    public bool _pauseAppOpen;
+    public AdsProviderKind appOpenProvider = AdsProviderKind.Online;
+
     [Header("Shared Pacing")]
     [Min(0f)] public float startupInterstitialGraceSeconds;
     [Min(0f)] public float minimumFullscreenIntervalSeconds;
@@ -89,6 +94,30 @@ public class AdsMediator : MonoBehaviour
         if (activeProvider == null && allowProviderFallback) TryGetProvider(Other(primary), out activeProvider, out _);
         if (activeProvider == null)
             Logger.Warn($"[AdsMediator] No ad provider is registered. Mode={adsMode}. The provider prefab may be absent, disabled, or not imported.");
+    }
+
+    public void ShowAppOpen()
+    {
+        if (_pauseAppOpen || adsMode == EnumsJar_Salon.AdsMode.None || IsAdsRemoved()) return;
+        var primary = GetPrimaryKind(OutAdFormat.AppOpen);
+        TryShowAppOpen(primary, false);
+    }
+
+    private void TryShowAppOpen(AdsProviderKind kind, bool fallback)
+    {
+        if (_pauseAppOpen) return;
+        if (!TryGetReadyProvider(kind, OutAdFormat.AppOpen, out var provider, out var reason) || !(provider is IAppOpenAdsProvider))
+        {
+            if (!fallback && allowProviderFallback) TryShowAppOpen(Other(kind), true);
+            else LogUnavailable(OutAdFormat.AppOpen, reason ?? "provider does not support AppOpen");
+            return;
+        }
+        ((IAppOpenAdsProvider)provider).ShowAppOpen(outcome =>
+        {
+            if (outcome.DidOpen) lastFullscreenTime = Time.realtimeSinceStartup;
+            else if (!fallback && allowProviderFallback && outcome.Result != AdShowResult.Busy && outcome.Result != AdShowResult.Disabled)
+                TryShowAppOpen(Other(kind), true);
+        });
     }
 
     public void ShowInterstitial()
@@ -272,6 +301,7 @@ public class AdsMediator : MonoBehaviour
     {
         if (useAdvancedRouting)
         {
+            if (format == OutAdFormat.AppOpen) return appOpenProvider;
             if (format == OutAdFormat.Banner) return bannerProvider;
             if (format == OutAdFormat.LargeBanner) return largeBannerProvider;
             if (format == OutAdFormat.Rewarded) return rewardedProvider;

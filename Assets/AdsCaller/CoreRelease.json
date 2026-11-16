@@ -127,7 +127,7 @@
     },
     {
       "path": "Assets/AdsCaller/Scripts/Core/AdsMediator.cs",
-      "sha256": "fa4c1cfce1950d60ce7ab800ad10f34ef4010fcc4217f3d9c57467c4b109c480"
+      "sha256": "aa40bca8517bad341f06c234049269d31721119b59d26d1d27a92db556d1b328"
     },
     {
       "path": "Assets/AdsCaller/Scripts/Core/AdsMediator.cs.meta",
@@ -151,7 +151,7 @@
     },
     {
       "path": "Assets/AdsCaller/Scripts/Core/IOutAdsProvider.cs",
-      "sha256": "c846e62b061639bff56db472813554b4852adffc3f512a78a6e33fd61b150ed2"
+      "sha256": "b5d871fd5f65c747192f3c5a5cd11693ca0b318204204fe7e8bf6e41e1f199cc"
     },
     {
       "path": "Assets/AdsCaller/Scripts/Core/IOutAdsProvider.cs.meta",
@@ -159,7 +159,7 @@
     },
     {
       "path": "Assets/AdsCaller/Scripts/Data/EnumsJar_Salon.cs",
-      "sha256": "e0906a329cf772766c3f8f79d18be3077eb18ebfb0706007990c90fcaedd1cd4"
+      "sha256": "b7912b68de1e43b00e649c92e0abb4aa4b9d122b1c48e7a031e0d899c6155d1e"
     },
     {
       "path": "Assets/AdsCaller/Scripts/Data/EnumsJar_Salon.cs.meta",
@@ -339,7 +339,7 @@
     },
     {
       "path": "Assets/Editor/BuildAutomator/Adb.cs",
-      "sha256": "1182e34deb7549c8577d28457058f80bf74824894807c2143b8ed752c6f1f9b3"
+      "sha256": "a277477f6c14c4bba9bf1e02896c83f7f77e27fe655d0e40c3c7778369f8050e"
     },
     {
       "path": "Assets/Editor/BuildAutomator/Adb.cs.meta",
@@ -347,7 +347,7 @@
     },
     {
       "path": "Assets/Editor/BuildAutomator/BuildController.cs",
-      "sha256": "c06bad334da50b0a7a346cc2fe5b2804de7fdc66ec006af1aa0be9089beaf6cd"
+      "sha256": "815ffefc738fbf04c99061d31ea4446e579ed36ef778d6329bdd02ecae817e79"
     },
     {
       "path": "Assets/Editor/BuildAutomator/BuildController.cs.meta",
@@ -363,7 +363,7 @@
     },
     {
       "path": "Assets/Editor/BuildAutomator/BuildJobs.cs",
-      "sha256": "90f2466c271a7f2dc084ba64bec91b6b7a668aa65e04489bc54cce3124994476"
+      "sha256": "80cdea80d5bc622b51d5a3229ca7d29496f0341c42d7073dc46181b8779de767"
     },
     {
       "path": "Assets/Editor/BuildAutomator/BuildJobs.cs.meta",
@@ -387,7 +387,7 @@
     },
     {
       "path": "Assets/Editor/BuildAutomator/MachineSettings.cs",
-      "sha256": "fceae8ce733318a03048ec583a16d790b3c13a02717f2b8bf54fc02341433e7d"
+      "sha256": "1b3e80c1ae12de8114f3e81b61cd66b374c11963d1b2ba0ef1e820aacf6dbf08"
     },
     {
       "path": "Assets/Editor/BuildAutomator/MachineSettings.cs.meta",
@@ -395,7 +395,7 @@
     },
     {
       "path": "Assets/Editor/BuildAutomator/OperationScheduler.cs",
-      "sha256": "05b8c817d91bc310808b341d546d2f78175f78b8fa28ee6729f0314978f6cf83"
+      "sha256": "820f6d256bedd04df67f48150675fe7a43c4dc41be11bbb3a4141c23524c119e"
     },
     {
       "path": "Assets/Editor/BuildAutomator/OperationScheduler.cs.meta",
@@ -411,7 +411,7 @@
     },
     {
       "path": "Assets/Editor/BuildAutomator/README.md",
-      "sha256": "d2c2211c03fb0587caacf9dae44c17c06c32a64541eed0cbd50de49b47177106"
+      "sha256": "dd5b6f55e56b02b3d69bb4e90aabf2efa6790a04bf758626295ac10ffedc97be"
     },
     {
       "path": "Assets/Editor/BuildAutomator/README.md.meta",

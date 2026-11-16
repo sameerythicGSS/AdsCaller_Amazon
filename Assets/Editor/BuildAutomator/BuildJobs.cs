@@ -90,6 +90,7 @@ namespace OutBuild
             string[] copyRoots = BuildStorage.CopyOutputRoots(root, copyFolders ?? BuildStorage.MachineStore.Read().additionalOutputFolders.ToArray());
             var errors = Validate(preset, version, code, false, false, "", root);
             if (errors.Count > 0) throw new BuildFailedException(string.Join("\n", errors));
+            using var refreshPause = BuildRefreshPause.Begin();
             Busy = true;
             string oldVersion = PlayerSettings.bundleVersion;
             int oldCode = PlayerSettings.Android.bundleVersionCode;

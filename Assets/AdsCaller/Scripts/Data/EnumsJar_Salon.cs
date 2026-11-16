@@ -62,7 +62,8 @@ public class EnumsJar_Salon
         Inter,
         LBanner,
         PopAd,
-        Rewarded
+        Rewarded,
+        AppOpen
     }
 
     public enum AdSequenceType

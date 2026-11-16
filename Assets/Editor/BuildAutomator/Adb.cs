@@ -183,15 +183,16 @@ namespace OutBuild
             var services = new List<WirelessService>();
             foreach (string line in (output ?? "").Split('\n'))
             {
-                var parts = Regex.Split(line.Trim(), @"\s+");
-                if (parts.Length < 3) continue;
-                bool pairing = parts[1].Contains("_adb-tls-pairing._tcp");
-                if (!pairing && !parts[1].Contains("_adb-tls-connect._tcp")) continue;
+                // DNS-SD collision names can contain spaces, e.g. "adb-serial-guid (2)".
+                // Locate the service column rather than splitting the instance name into words.
+                var match = Regex.Match(line.Trim(), @"^(?<name>.+?)\s+(?<type>_adb-tls-(?:pairing|connect)\._tcp)\.?\s+(?<endpoint>\S+)\s*$");
+                if (!match.Success) continue;
+                bool pairing = match.Groups["type"].Value == "_adb-tls-pairing._tcp";
                 string endpoint;
-                if (TryEndpoint(parts[2], out endpoint, 0))
+                if (TryEndpoint(match.Groups["endpoint"].Value, out endpoint, 0))
                     services.Add(new WirelessService
                     {
-                        Name = parts[0], Endpoint = endpoint, Pairing = pairing,
+                        Name = match.Groups["name"].Value, Endpoint = endpoint, Pairing = pairing,
                         ServiceType = pairing ? "_adb-tls-pairing._tcp" : "_adb-tls-connect._tcp"
                     });
             }

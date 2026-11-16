@@ -82,6 +82,14 @@ and [server configuration samples](https://docs.unity3d.com/2022.3/Documentation
 
 ## Shared controller and wireless workflow (2.4)
 
+- Wireless discovery accepts DNS-SD collision names such as `adb-serial-guid (2)`,
+  including Fire tablets advertising their current connection under that name.
+  Once a wireless transport verifies the hardware serial, older unavailable IP:port
+  aliases are retired. Nicknames, pairing, USB aliases, service identities, current
+  live connections and deployment selection are preserved. An unavailable device
+  keeps its last address until a verified wireless replacement appears.
+  Background discovery also retries one unavailable saved device per round when
+  mDNS is empty, within the existing time budget and per-address backoff.
 - **Explicit actions take priority.** Clicking Build, Refresh, Connect, or another device action
   cancels quiet discovery, waits for its current client command to stop, then executes the action.
   Background polling cannot swallow a click or jump ahead of pending foreground work.
@@ -446,3 +454,4 @@ macOS/Linux device behavior and actual hardware require their own smoke tests.
 - [Unity BuildPipeline.BuildPlayer](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/BuildPipeline.BuildPlayer.html)
 
 Standalone export works from both Dashboard and Full Controls and locates the complete tool folder even after relocation or UPM installation. It exports only that folder and checks that Unity created a nonempty package.
+Automatic device discovery pauses while a player build is running, including builds started from Unity's Build window. An in-flight background refresh is cancelled. Editors using the same machine settings also pause discovery during the build. Refreshing resumes at the normal interval after success, failure or cancellation; device selections and the auto-refresh preference are preserved. Editors must have this tool update to participate in the shared pause. Automatic probe timeouts never reset or disconnect a device transport; targeted resets are reserved for an explicit refresh.

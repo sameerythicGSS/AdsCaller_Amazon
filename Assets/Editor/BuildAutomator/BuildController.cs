@@ -33,6 +33,7 @@ namespace OutBuild
         internal int code;
         private BuildTarget lastTarget;
         private double nextMachineRefresh, nextRefresh;
+        private bool refreshPaused;
         internal bool adbChecked;
         internal MessageType messageType = MessageType.Info;
         public event Action Changed;
@@ -67,10 +68,12 @@ namespace OutBuild
             ReadVersion();
             adb = BuildStorage.FindAdb(machine.adbOverride);
             EditorApplication.update += Tick;
+            BuildRefreshPause.Pausing += PauseDiscovery;
             AssemblyReloadEvents.beforeAssemblyReload += Shutdown;
             EditorApplication.quitting += Shutdown;
         }
-        private void Shutdown() { scheduler.Shutdown(); SaveLocal(); EditorApplication.update -= Tick; }
+        private void Shutdown() { scheduler.Shutdown(); SaveLocal(); EditorApplication.update -= Tick; BuildRefreshPause.Pausing -= PauseDiscovery; }
+        private void PauseDiscovery() { if (scheduler.Quiet) scheduler.Cancel(); }
         private void Repaint() { Changed?.Invoke(); }
         internal void ChoosePreset(int index)
         {
@@ -109,9 +112,20 @@ namespace OutBuild
         {
             if (scheduler.Busy && machine.adbOverride != state.adbOverride) state.adbOverride = machine.adbOverride;
             bool changedAdb = machine.adbOverride != state.adbOverride;
+            // Capture the identity before Observe retires the selected device's old endpoint.
+            bool capturedIdentity = false;
+            local.selectionIdentities = local.selectionIdentities ?? new List<DeviceSelection>();
+            foreach (string transport in local.selectedDevices)
+            {
+                var previous = MachineSettingsStore.Find(machine, transport);
+                if (previous == null || string.IsNullOrEmpty(previous.hardwareId) ||
+                    local.selectionIdentities.Any(item => MachineSettingsStore.NormalizeTransport(item.transport) == MachineSettingsStore.NormalizeTransport(transport))) continue;
+                local.selectionIdentities.Add(new DeviceSelection { transport = transport, hardwareId = previous.hardwareId });
+                capturedIdentity = true;
+            }
             machine = state;
             int previousCount = local.selectedDevices.Count;
-            if (MachineSettingsStore.ReconcileSelection(local, state)) SaveLocal();
+            if (MachineSettingsStore.ReconcileSelection(local, state) | capturedIdentity) SaveLocal();
             if (local.selectedDevices.Count < previousCount)
                 SetMessage("A selected address changed device identity or was forgotten in another project. Select the intended device again.", MessageType.Warning);
             if (changedAdb)
@@ -155,6 +169,18 @@ namespace OutBuild
 
         private void Tick()
         {
+            if (BuildRefreshPause.IsPaused)
+            {
+                refreshPaused = true;
+                PauseDiscovery();
+                return;
+            }
+            if (refreshPaused)
+            {
+                refreshPaused = false;
+                nextRefresh = EditorApplication.timeSinceStartup + RefreshInterval;
+                nextMachineRefresh = EditorApplication.timeSinceStartup + 2;
+            }
             if (scheduler.Busy || BuildJobs.Busy || BuildPipeline.isBuildingPlayer || EditorApplication.isCompiling || EditorApplication.isUpdating || EditorApplication.isPlayingOrWillChangePlaymode) return;
             if (lastTarget != BuildJobs.Target) ReadVersion();
             if (EditorApplication.timeSinceStartup >= nextMachineRefresh)
@@ -211,6 +237,7 @@ namespace OutBuild
 
         internal async Task RefreshDevices(CancellationToken token, bool probeSavedFallbacks)
         {
+            if (BuildRefreshPause.IsPaused) return;
             if (string.IsNullOrEmpty(adb)) throw new InvalidOperationException("ADB not found. Install Android Build Support with SDK tools, or browse to adb under Advanced.");
             if (!adbChecked)
             {
@@ -322,23 +349,25 @@ namespace OutBuild
                 }
             }
 
-            if (!probeSavedFallbacks) return recovered;
             int fallbackAttempts = 0;
             // Selected targets go first so unavailable saved devices do not delay the device being used.
             foreach (var saved in machine.devices.OrderByDescending(item => item.aliases.Any(IsSelected)).ToArray())
             {
+                if (!probeSavedFallbacks && EditorApplication.timeSinceStartup - roundStarted > 6) break;
                 var advertised = services.Where(service => !service.Pairing &&
                     MachineSettingsStore.FindByMdns(machine, service.Name)?.key == saved.key).ToArray();
                 var known = new[] { saved.id }.Concat(saved.aliases.AsEnumerable().Reverse())
                     .Concat(saved.mdnsInstances.Select(instance => instance + "._adb-tls-connect._tcp"));
                 var targets = WirelessReconnect.Targets(advertised, known);
                 if (DeviceReady(saved.key)) { wirelessReconnect.Reset(targets); continue; }
-                if (!probeSavedFallbacks && advertised.Length == 0) continue;
                 if (!targets.Any(target => wirelessReconnect.CanAttempt(target, EditorApplication.timeSinceStartup))) continue;
                 // Probe one undiscovered saved device per refresh, keeping background work bounded.
                 if (advertised.Length == 0 && fallbackAttempts++ >= 1) continue;
 
-                foreach (var stale in devices.Where(device => device.Transport == "Wi-Fi" && device.State == "offline" &&
+                // Background checks can time out under build/Editor load. Only an explicit
+                // refresh may reset a transport; automatic discovery must never drop it.
+                foreach (var stale in devices.Where(device => probeSavedFallbacks && !scheduler.Quiet &&
+                    device.Transport == "Wi-Fi" && device.State == "offline" &&
                     MachineSettingsStore.Find(machine, device.Id)?.key == saved.key).ToArray())
                 {
                     // Check again before resetting this one transport; another Editor may already have recovered it.

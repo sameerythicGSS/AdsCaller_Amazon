@@ -76,6 +76,13 @@ public readonly struct AdShowOutcome
     public override string ToString() => $"{Provider}/{Format}: {Result}. {Reason}";
 }
 
+/// <summary>Optional capability; existing providers remain source compatible.</summary>
+public interface IAppOpenAdsProvider
+{
+    void ShowAppOpen();
+    void ShowAppOpen(Action<AdShowOutcome> onResult);
+}
+
 public interface IOutAdsProvider
 {
     bool IsBannerAdShowing { get; }
@@ -179,6 +186,7 @@ public static class AdsFullscreenCoordinator
     private static string activeOwner;
     private static OutAdFormat activeFormat;
 
+    public static float LastReleasedAt { get; private set; } = -Mathf.Infinity;
     public static bool IsBusy => activeLease != 0;
     public static string ActiveDescription => IsBusy ? $"{activeOwner}/{activeFormat}" : "Idle";
 
@@ -203,6 +211,7 @@ public static class AdsFullscreenCoordinator
     public static void Release(int lease)
     {
         if (lease == 0 || lease != activeLease) return;
+        LastReleasedAt = Time.realtimeSinceStartup;
         activeLease = 0;
         activeOwner = null;
     }
@@ -210,6 +219,7 @@ public static class AdsFullscreenCoordinator
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetForPlayMode()
     {
+        LastReleasedAt = -Mathf.Infinity;
         nextLease = 0;
         activeLease = 0;
         activeOwner = null;
